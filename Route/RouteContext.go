@@ -26,10 +26,25 @@ func NewRouteContext() *RouteContext {
 	}
 }
 
+// Init the RouteContext and begin listen
+func (self *RouteContext) InitRouteWithGivenController(controllers []*Controller, listenAddr string) {
+	self.controllers = controllers
+	self.RouteParse()
+	self.Start(listenAddr)
+}
+
+// Init the RouteContext and begin listen
+func (self *RouteContext) InitRoute(listenAddr string) {
+	self.RouteParse()
+	self.Start(listenAddr)
+}
+
+// add Controller to RouteContext
 func (self *RouteContext) AddController(controller Controller) {
 	self.controllers = append(self.controllers, &controller)
 }
 
+// find endpoint from given Controller list
 func (self *RouteContext) RouteParse() {
 	set := make(map[string]routeMap)
 	for _, controller := range self.controllers {
@@ -45,7 +60,7 @@ func (self *RouteContext) RouteParse() {
 			}
 			set[route] = routeMap{
 				endPoint:       route,
-				method:         method,
+				method:         strings.ToUpper(method),
 				controller:     controller,
 				controllerType: controllerType,
 				controllerName: controllerName,
@@ -55,6 +70,7 @@ func (self *RouteContext) RouteParse() {
 	self.routeMap = set
 }
 
+// start http listen using gin
 func (self *RouteContext) Start(addr string) {
 	router := gin.Default()
 	rootGroup := router.Group("/*path")
@@ -66,9 +82,14 @@ func (self *RouteContext) route(c *gin.Context) {
 	path := c.Request.RequestURI
 
 	if routeMap, ok := self.routeMap[path]; ok {
-		methodName := strings.Replace(path, "/"+routeMap.controllerName+"/", "", 1)
-		result := reflect.ValueOf(*routeMap.controller).Elem().FieldByName(methodName).Call(nil)[0]
-		c.String(http.StatusOK, result.String())
+		if c.Request.Method == routeMap.method {
+			methodName := strings.Replace(path, "/"+routeMap.controllerName+"/", "", 1)
+			result := reflect.ValueOf(*routeMap.controller).Elem().FieldByName(methodName).Call(nil)[0]
+			c.String(http.StatusOK, result.String())
+		} else {
+			c.String(http.StatusMethodNotAllowed, "405 NotAllowed")
+		}
+
 	} else {
 		c.String(http.StatusNotFound, "404 NotFind")
 	}

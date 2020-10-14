@@ -14,30 +14,25 @@ type ResultModel struct {
 
 func main() {
 	routeContext := Route.NewRouteContext()
-
-	controller := NewHomeController()
-	controller.RegisterAsController(routeContext)
-	routeContext.RouteParse()
-	routeContext.Start(":8080")
+	NewHomeController(routeContext)
+	routeContext.InitRoute(":8080")
 }
 
 type HomeController struct {
 	Index func() string `Route:"/{Controller}/Index" method:"Get"`
 }
 
-func (self *HomeController) RegisterAsController(ctx *Route.RouteContext) {
-	ctx.AddController(self)
-}
-
 func (self *HomeController) GetControllerType() reflect.Type {
 	return reflect.TypeOf(*self)
 }
 
-func NewHomeController() HomeController {
-	return HomeController{
+func NewHomeController(routeContext *Route.RouteContext) HomeController {
+	instance := HomeController{
 		Index: func() string {
 			fmt.Println("enter index")
 			return "Index"
 		},
 	}
+	routeContext.AddController(&instance)
+	return instance
 }
