@@ -2,11 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/wwbweibo/EasyRoute/Route"
-	crypto2 "github.com/wwbweibo/EasyRoute/crypto"
-	"mime/multipart"
-	"net/http"
 	"reflect"
 )
 
@@ -44,61 +40,4 @@ func NewHomeController() HomeController {
 			return "Index"
 		},
 	}
-}
-
-func route(c *gin.Context) {
-	path := c.Request.RequestURI
-	if path == "/uploadData" {
-		sn := c.PostForm("sn")
-		bizType := c.PostForm("bizType")
-		content := c.PostForm("content")
-		file, _ := c.FormFile("file")
-		ext := c.PostForm("ext")
-		sign := c.PostForm("sign")
-		c.JSON(http.StatusOK, uploadData(sn, bizType, content, file, ext, sign))
-	} else {
-		c.String(http.StatusNotFound, "404 NotFind")
-	}
-}
-
-func uploadData(sn, bizType, content string, file *multipart.FileHeader, ext string, sign string) ResultModel {
-	result := ResultModel{}
-	result.Code = 500
-	result.Message = "Error"
-
-	if sn == "" {
-		result.Message = "Sn不能为空"
-		return result
-	}
-	if bizType == "" {
-		result.Message = "业务类型不能为空"
-		return result
-	}
-	if content == "" {
-		result.Message = "Content不能为空"
-		return result
-	}
-	checkData := sn + bizType + content
-	var bytes = []byte(checkData)
-	if file != nil {
-		fileContent, err := file.Open()
-		if err != nil {
-			result.Message = "文件读取错误"
-			return result
-		}
-		fileBytes := make([]byte, file.Size)
-		fileContent.Read(fileBytes)
-		bytes = append(fileBytes, bytes...)
-	}
-	bytes = append(bytes, []byte(ext)...)
-	data := crypto2.EncryptData(bytes)
-	computedSign := data.HMacMd5("123")
-	if sign == "" || sign != computedSign {
-		result.Code = 401
-		result.Message = "签名校验失败"
-		return result
-	}
-	result.Code = 200
-	result.Message = "Success"
-	return result
 }
