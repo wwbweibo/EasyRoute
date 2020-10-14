@@ -1,10 +1,10 @@
 package main
 
 import (
-	"DataReceiver/Route"
-	crypto2 "DataReceiver/crypto"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/wwbweibo/EasyRoute/Route"
+	crypto2 "github.com/wwbweibo/EasyRoute/crypto"
 	"mime/multipart"
 	"net/http"
 	"reflect"
