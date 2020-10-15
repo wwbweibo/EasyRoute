@@ -14,6 +14,8 @@ type ResultModel struct {
 
 func main() {
 	routeContext := Route.NewRouteContext()
+	pipeline := &TestPipeline{}
+	routeContext.AddPipeline(pipeline)
 	NewHomeController(routeContext)
 	routeContext.InitRoute(":8080")
 }
@@ -35,4 +37,12 @@ func NewHomeController(routeContext *Route.RouteContext) HomeController {
 	}
 	routeContext.AddController(&instance)
 	return instance
+}
+
+type TestPipeline struct {
+}
+
+func (self *TestPipeline) Handle(c Route.RequestContext, pipeline *Route.Pipeline) {
+	fmt.Println("Enter TestPipeline")
+	pipeline.Next()
 }

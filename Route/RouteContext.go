@@ -2,15 +2,17 @@ package Route
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"reflect"
 	"strings"
 )
 
 type RouteContext struct {
+	pipeline    []PipelineHandler
 	controllers []*Controller
 	routeMap    map[string]routeMap
 }
+
+type RequestContext *gin.Context
 
 type routeMap struct {
 	endPoint       string
@@ -21,9 +23,16 @@ type routeMap struct {
 }
 
 func NewRouteContext() *RouteContext {
-	return &RouteContext{
+	inst := RouteContext{
 		controllers: make([]*Controller, 0),
+		pipeline:    []PipelineHandler{},
 	}
+	reqHandler := requestHandler{
+		routeContext: &inst,
+	}
+
+	inst.AddPipeline(&reqHandler)
+	return &inst
 }
 
 // Init the RouteContext and begin listen
@@ -42,6 +51,10 @@ func (self *RouteContext) InitRoute(listenAddr string) {
 // add Controller to RouteContext
 func (self *RouteContext) AddController(controller Controller) {
 	self.controllers = append(self.controllers, &controller)
+}
+
+func (self *RouteContext) AddPipeline(pipeline PipelineHandler) {
+	self.pipeline = append(self.pipeline, pipeline)
 }
 
 // find endpoint from given Controller list
@@ -79,18 +92,9 @@ func (self *RouteContext) Start(addr string) {
 }
 
 func (self *RouteContext) route(c *gin.Context) {
-	path := c.Request.RequestURI
-
-	if routeMap, ok := self.routeMap[path]; ok {
-		if c.Request.Method == routeMap.method {
-			methodName := strings.Replace(path, "/"+routeMap.controllerName+"/", "", 1)
-			result := reflect.ValueOf(*routeMap.controller).Elem().FieldByName(methodName).Call(nil)[0]
-			c.String(http.StatusOK, result.String())
-		} else {
-			c.String(http.StatusMethodNotAllowed, "405 NotAllowed")
-		}
-
-	} else {
-		c.String(http.StatusNotFound, "404 NotFind")
+	context := RequestContext(c)
+	for i := len(self.pipeline) - 1; i >= 1; i-- {
+		self.pipeline[i].Handle(context, self.pipeline[i-1])
 	}
+	self.pipeline[0].Handle(c, nil)
 }
