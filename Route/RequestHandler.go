@@ -9,9 +9,11 @@ import (
 
 type requestHandler struct {
 	routeContext *RouteContext
+	delegate     RequestDelegate
 }
 
-func (self *requestHandler) Handle(ctx RequestContext, next PipelineHandler) {
+// 最终的相应处理程序
+func (self *requestHandler) Handle(ctx HttpContext) {
 	c := (*gin.Context)(ctx)
 	path := c.Request.RequestURI
 	if routeMap, ok := self.routeContext.routeMap[path]; ok {

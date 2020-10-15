@@ -2,17 +2,46 @@ package Route
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"reflect"
 	"strings"
 )
 
-type RouteContext struct {
-	pipeline    []PipelineHandler
-	controllers []*Controller
-	routeMap    map[string]routeMap
+var routeContext = RouteContext{
+	controllers: make([]*Controller, 0),
+	pipeline: Pipeline{
+		handlerList: make([]Middleware, 0),
+	},
 }
 
-type RequestContext *gin.Context
+var reqHandler = requestHandler{
+	routeContext: &routeContext,
+	delegate: func(ctx HttpContext) {
+		c := (*gin.Context)(ctx)
+		path := c.Request.RequestURI
+		if routeMap, ok := routeContext.routeMap[path]; ok {
+			if c.Request.Method == routeMap.method {
+				methodName := strings.Replace(path, "/"+routeMap.controllerName+"/", "", 1)
+				result := reflect.ValueOf(*routeMap.controller).Elem().FieldByName(methodName).Call(nil)[0]
+				c.String(http.StatusOK, result.String())
+			} else {
+				c.String(http.StatusMethodNotAllowed, "405 NotAllowed")
+			}
+
+		} else {
+			c.String(http.StatusNotFound, "404 NotFind")
+		}
+	},
+}
+
+type RouteContext struct {
+	controllers []*Controller       // 添加到上下文中的控制器
+	routeMap    map[string]routeMap // 用于保存终结点和处理方法的映射
+	pipeline    Pipeline            // 请求处理管道
+	app         RequestDelegate     // 最终的请求处理方法
+}
+
+type HttpContext *gin.Context
 
 type routeMap struct {
 	endPoint       string
@@ -23,16 +52,7 @@ type routeMap struct {
 }
 
 func NewRouteContext() *RouteContext {
-	inst := RouteContext{
-		controllers: make([]*Controller, 0),
-		pipeline:    []PipelineHandler{},
-	}
-	reqHandler := requestHandler{
-		routeContext: &inst,
-	}
-
-	inst.AddPipeline(&reqHandler)
-	return &inst
+	return &routeContext
 }
 
 // Init the RouteContext and begin listen
@@ -51,10 +71,6 @@ func (self *RouteContext) InitRoute(listenAddr string) {
 // add Controller to RouteContext
 func (self *RouteContext) AddController(controller Controller) {
 	self.controllers = append(self.controllers, &controller)
-}
-
-func (self *RouteContext) AddPipeline(pipeline PipelineHandler) {
-	self.pipeline = append(self.pipeline, pipeline)
 }
 
 // find endpoint from given Controller list
@@ -83,8 +99,13 @@ func (self *RouteContext) RouteParse() {
 	self.routeMap = set
 }
 
+func (receiver *RouteContext) AddMiddleware(middleware Middleware) {
+	receiver.pipeline.AddMiddleware(middleware)
+}
+
 // start http listen using gin
 func (self *RouteContext) Start(addr string) {
+	self.app = self.pipeline.build()
 	router := gin.Default()
 	rootGroup := router.Group("/*path")
 	rootGroup.Any("", self.route)
@@ -92,9 +113,6 @@ func (self *RouteContext) Start(addr string) {
 }
 
 func (self *RouteContext) route(c *gin.Context) {
-	context := RequestContext(c)
-	for i := len(self.pipeline) - 1; i >= 1; i-- {
-		self.pipeline[i].Handle(context, self.pipeline[i-1])
-	}
-	self.pipeline[0].Handle(c, nil)
+	ctx := HttpContext(c)
+	self.app(ctx)
 }
