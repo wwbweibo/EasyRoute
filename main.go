@@ -38,7 +38,8 @@ func main() {
 }
 
 type HomeController struct {
-	Index func() string `Route:"/{Controller}/Index" method:"Get"`
+	Index  func() string         `method:"Get"`
+	IndexA func(a string) string `method:"Get" src:"FromQueryString" list:"a"`
 }
 
 func (self *HomeController) GetControllerType() reflect.Type {
@@ -50,6 +51,10 @@ func NewHomeController(routeContext *Route.RouteContext) HomeController {
 		Index: func() string {
 			fmt.Println("enter index")
 			return "Index"
+		},
+		IndexA: func(a string) string {
+			fmt.Println(a)
+			return a
 		},
 	}
 	routeContext.AddController(&instance)
