@@ -39,7 +39,7 @@ func main() {
 
 type HomeController struct {
 	Index  func() string         `method:"Get"`
-	IndexA func(a string) string `method:"Get" src:"FromQueryString" list:"a"`
+	IndexA func(a string) string `method:"Get" param:"a"`
 }
 
 func (self *HomeController) GetControllerType() reflect.Type {

@@ -2,7 +2,6 @@ package Route
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"reflect"
 	"strings"
 )
@@ -11,29 +10,6 @@ var routeContext = RouteContext{
 	controllers: make([]*Controller, 0),
 	pipeline: Pipeline{
 		handlerList: make([]Middleware, 0),
-	},
-}
-
-var reqHandler = requestHandler{
-	routeContext: &routeContext,
-	delegate: func(ctx HttpContext) {
-		c := (*gin.Context)(ctx)
-		path := c.Request.URL.Path
-		if routeMap, ok := routeContext.routeMap[path]; ok {
-			if c.Request.Method == routeMap.method {
-				methodName := strings.Replace(path, "/"+routeMap.controllerName+"/", "", 1)
-
-				method := reflect.ValueOf(*routeMap.controller).Elem().FieldByName(methodName)
-
-				result := method.Call(nil)[0]
-				c.String(http.StatusOK, result.String())
-			} else {
-				c.String(http.StatusMethodNotAllowed, "405 NotAllowed")
-			}
-
-		} else {
-			c.String(http.StatusNotFound, "404 NotFind")
-		}
 	},
 }
 
@@ -52,7 +28,13 @@ type routeMap struct {
 	controller     *Controller  // 保存对应的控制器信息
 	controllerType reflect.Type // 保存控制器类型信息
 	controllerName string       // 控制器名称
-	paramSource    string       // 参数来源
+	paramMap       *[]paramMap  // 参数来源
+}
+
+type paramMap struct {
+	paramName string
+	paramType string
+	source    string
 }
 
 func NewRouteContext() *RouteContext {
@@ -82,28 +64,25 @@ func (self *RouteContext) RouteParse() {
 	set := make(map[string]routeMap)
 	for _, controller := range self.controllers {
 		controllerType := (*controller).GetControllerType()
-		patharr := strings.Split(controllerType.String(), ".")
-		controllerName := strings.Replace(patharr[len(patharr)-1], "Controller", "", 1)
+		controllerName := resolveControllerName(&controllerType, controller)
 		for i := 0; i < controllerType.NumField(); i++ {
 			field := controllerType.Field(i)
-			route := field.Tag.Get("Route")
-			method := field.Tag.Get("method")
-			paramSource := field.Tag.Get("src")
-			if paramSource == "" {
-				paramSource = "FromQueryString"
+			route := resolveMethodName(&field.Tag, &field)
+			method := resolveMethod(&field.Tag)
+			paramList := resolveParamName(&field.Tag, &field)
+
+			// if the route is not start with "/", then combine the controllerName and route
+			if !strings.HasPrefix(route, "/") {
+				route = "/" + controllerName + "/" + route
 			}
-			if route == "" {
-				route = "/" + controllerName + "/" + field.Name
-			} else if strings.Contains(route, "{Controller}") {
-				route = strings.Replace(route, "{Controller}", controllerName, 1)
-			}
+
 			set[route] = routeMap{
 				endPoint:       route,
 				method:         strings.ToUpper(method),
 				controller:     controller,
 				controllerType: controllerType,
 				controllerName: controllerName,
-				paramSource:    paramSource,
+				paramMap:       paramList,
 			}
 		}
 	}
