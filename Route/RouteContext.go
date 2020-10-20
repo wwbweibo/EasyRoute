@@ -2,6 +2,7 @@ package Route
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/wwbweibo/EasyRoute/Route/TypeManagement"
 	"reflect"
 	"strings"
 )
@@ -11,13 +12,17 @@ var routeContext = RouteContext{
 	pipeline: Pipeline{
 		handlerList: make([]Middleware, 0),
 	},
+	typeCollection: typeCollectionInstance,
 }
 
+var typeCollectionInstance = TypeManagement.NewTypeCollect()
+
 type RouteContext struct {
-	controllers []*Controller       // 添加到上下文中的控制器
-	routeMap    map[string]routeMap // 用于保存终结点和处理方法的映射
-	pipeline    Pipeline            // 请求处理管道
-	app         RequestDelegate     // 最终的请求处理方法
+	controllers    []*Controller               // 添加到上下文中的控制器
+	routeMap       map[string]routeMap         // 用于保存终结点和处理方法的映射
+	pipeline       Pipeline                    // 请求处理管道
+	app            RequestDelegate             // 最终的请求处理方法
+	typeCollection *TypeManagement.TypeCollect // 内置类型字典
 }
 
 type HttpContext *gin.Context
@@ -91,6 +96,10 @@ func (self *RouteContext) RouteParse() {
 
 func (receiver *RouteContext) AddMiddleware(middleware Middleware) {
 	receiver.pipeline.AddMiddleware(middleware)
+}
+
+func (receiver *RouteContext) RegisterTypeByInstance(instance interface{}) {
+	receiver.typeCollection.Register(instance)
 }
 
 // start http listen using gin

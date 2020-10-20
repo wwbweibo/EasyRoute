@@ -14,6 +14,7 @@ type ResultModel struct {
 
 func main() {
 	routeContext := Route.NewRouteContext()
+	routeContext.RegisterTypeByInstance(Person{})
 	outerMiddleware := func(next Route.RequestDelegate) Route.RequestDelegate {
 		return func(ctx Route.HttpContext) {
 			fmt.Println("abc")
@@ -37,9 +38,15 @@ func main() {
 	routeContext.InitRoute(":8080")
 }
 
+type Person struct {
+	Name string  `json:"Name"`
+	Age  float64 `json:"Age"`
+}
+
 type HomeController struct {
-	Index  func() string         `method:"Get"`
-	IndexA func(a string) string `method:"Get" param:"a"`
+	Index       func() string              `method:"Get"`
+	IndexA      func(a string) string      `method:"Get" param:"a"`
+	IndexPerson func(person Person) Person `method:"get" param:"person"`
 }
 
 func (self *HomeController) GetControllerType() reflect.Type {
@@ -55,6 +62,10 @@ func NewHomeController(routeContext *Route.RouteContext) HomeController {
 		IndexA: func(a string) string {
 			fmt.Println(a)
 			return a
+		},
+		IndexPerson: func(person Person) Person {
+			fmt.Printf("Name： %s, Age：%f\n", person.Name, person.Age)
+			return person
 		},
 	}
 	routeContext.AddController(&instance)

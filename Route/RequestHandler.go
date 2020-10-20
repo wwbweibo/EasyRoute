@@ -23,11 +23,12 @@ var reqHandler = requestHandler{
 				method := reflect.ValueOf(*routeMap.controller).Elem().FieldByName(methodName)
 				// if the length of param map greater than 0, the method got params, fill it
 				if len(*routeMap.paramMap) > 0 {
-					result := method.Call(fillUp(c, routeMap.paramMap))[0]
-					c.String(http.StatusOK, result.String())
+					params := fillUp(c, routeMap.paramMap)
+					result := method.Call(params)[0]
+					c.JSON(http.StatusOK, result.Interface())
 				} else {
 					result := method.Call(nil)[0]
-					c.String(http.StatusOK, result.String())
+					c.JSON(http.StatusOK, result)
 				}
 			} else {
 				c.String(http.StatusMethodNotAllowed, "405 NotAllowed")

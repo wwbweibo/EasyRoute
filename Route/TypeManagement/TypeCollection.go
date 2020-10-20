@@ -54,6 +54,14 @@ func (receiver *TypeCollect) RegisterType(t *reflect.Type) {
 	}
 }
 
+func (receiver *TypeCollect) TypeOf(name string) (*reflect.Type, error) {
+	if t, ok := receiver.types[name]; ok {
+		return t, nil
+	} else {
+		return nil, errors.New("Error to get type of :" + name)
+	}
+}
+
 func (receiver *TypeCollect) InstanceOf(name string) (interface{}, error) {
 	if t, ok := receiver.types[name]; ok {
 		createdInstance := reflect.New(*t)
