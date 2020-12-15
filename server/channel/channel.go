@@ -1,4 +1,4 @@
-package server
+package channel
 
 import (
 	"net"
@@ -30,4 +30,16 @@ func (receiver *Channel) WriteRequestData(p []byte) {
 func (receiver *Channel) WriteResponseData(p []byte) {
 	receiver.outputBuffer.Write(p)
 	receiver.outputChan <- true
+}
+
+func (receiver *Channel) GetInputBuffer() *ByteBuffer {
+	return receiver.inputBuffer
+}
+
+func (receiver *Channel) GetOutputBuffer() *ByteBuffer {
+	return receiver.outputBuffer
+}
+
+func (receiver *Channel) GetInputChannel() chan bool {
+	return receiver.inputChan
 }

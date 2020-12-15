@@ -1,7 +1,8 @@
 package server
 
 import (
-	"fmt"
+	"github.com/wwbweibo/EasyRoute/server/channel"
+	"github.com/wwbweibo/EasyRoute/server/http"
 	"log"
 	"net"
 )
@@ -10,7 +11,7 @@ func HandleConnection(conn net.Conn) {
 	if conn == nil {
 		log.Fatal("connection is empty, can not handle it")
 	}
-	channel := NewChannel(conn)
+	channel := channel.NewChannel(conn)
 	go handleRequestData(channel)
 	go handleResponseData(channel)
 	for true {
@@ -23,18 +24,15 @@ func HandleConnection(conn net.Conn) {
 	}
 }
 
-func handleRequestData(channel *Channel) {
+func handleRequestData(channel *channel.Channel) {
 	for true {
 		select {
-		case <-channel.inputChan:
-			buffer := make([]byte, 1024)
-			cnt, _ := channel.inputBuffer.Read(buffer)
-			fmt.Println(string(buffer[:cnt]))
-			// todo : invoke decoder, and handler
+		case <-channel.GetInputChannel():
+			http.DecodeHttpRequest(channel.GetInputBuffer())
 		}
 	}
 }
 
-func handleResponseData(channel *Channel) {
+func handleResponseData(channel *channel.Channel) {
 
 }

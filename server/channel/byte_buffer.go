@@ -1,4 +1,4 @@
-package server
+package channel
 
 import "math"
 
@@ -80,7 +80,7 @@ func (b *ByteBuffer) getWritableBytesLength() int {
 	return b.bufferSize - b.writerIndex
 }
 
-func (b ByteBuffer) organizeSpace(expect int) {
+func (b *ByteBuffer) organizeSpace(expect int) {
 	// delete the used space
 	cleanableBytes := b.readerIndex
 	b.buffer = b.buffer[0:cleanableBytes]
