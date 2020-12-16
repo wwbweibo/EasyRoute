@@ -1,32 +1,31 @@
-package Route
+package route
 
 import (
 	"bytes"
 	"encoding/json"
+	"net/http"
 	"reflect"
 	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
 // fill up the param list
-func fillUp(c *gin.Context, paramList *[]paramMap) []reflect.Value {
+func fillUp(request *http.Request, paramList *[]paramMap) []reflect.Value {
 	paramValueList := make([]reflect.Value, len(*paramList))
 	for idx, param := range *paramList {
 		if param.source == "FromQuery" {
-			paramValueList[idx] = fillUpFromQueryString(c, &param)
+			paramValueList[idx] = fillUpFromQueryString(request, &param)
 		} else if param.source == "FromBody" {
-			paramValueList[idx] = fillUpFromBodyContent(c, &param)
+			paramValueList[idx] = fillUpFromBodyContent(request, &param)
 		} else if param.source == "FromForm" {
-			paramValueList[idx] = fillUpFromForm(c, &param)
+			paramValueList[idx] = fillUpFromForm(request, &param)
 		}
 	}
 	return paramValueList
 }
 
 // fill up params from query string
-func fillUpFromQueryString(c *gin.Context, param *paramMap) reflect.Value {
-	value := c.Query(param.paramName)
+func fillUpFromQueryString(request *http.Request, param *paramMap) reflect.Value {
+	value := request.URL.Query().Get(param.paramName)
 	paramType, err := typeCollectionInstance.TypeOf(param.paramType)
 	if err != nil {
 		panic("Error to Fill Up Param " + param.paramName + " could not find the type")
@@ -39,24 +38,24 @@ func fillUpFromQueryString(c *gin.Context, param *paramMap) reflect.Value {
 	return reflect.ValueOf(value)
 }
 
-func fillUpFromBodyContent(c *gin.Context, param *paramMap) reflect.Value {
-	bodyContent := c.Request.Body
+func fillUpFromBodyContent(request *http.Request, param *paramMap) reflect.Value {
+	bodyContent := request.Body
 	buf := bytes.Buffer{}
 	buf.ReadFrom(bodyContent)
 	return deserializeJsonObject(param.paramType, buf.Bytes())
 }
 
-func fillUpFromForm(c *gin.Context, param *paramMap) reflect.Value {
-	value := c.Request.Form[param.paramName]
+func fillUpFromForm(request *http.Request, param *paramMap) reflect.Value {
+	value := request.Form[param.paramName]
 	if len(value) <= 0 {
 		return reflect.ValueOf(nil)
 	}
 	return deserializeJsonObject(param.paramType, []byte(value[0]))
 }
 
-func fillUpFromPath(c *gin.Context, param *paramMap) reflect.Value {
+func fillUpFromPath(request http.Request, param *paramMap) reflect.Value {
 	// todo : path 变量的获取方式
-	url := c.Request.URL.String()
+	url := request.URL.String()
 	pathList := strings.Split(url, "/")
 	value := pathList[len(pathList)-1]
 	return reflect.ValueOf(value)

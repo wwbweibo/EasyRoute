@@ -1,4 +1,4 @@
-package Route
+package route
 
 import (
 	"reflect"
@@ -26,7 +26,7 @@ func resolveControllerName(controllerType *reflect.Type, controller *Controller)
 
 // get the method name from tag
 func resolveMethodName(tag *reflect.StructTag, field *reflect.StructField) string {
-	definedRoute := (*tag).Get("Route")
+	definedRoute := (*tag).Get("route")
 	// the user defined route is empty, field name as default
 	if definedRoute == "" {
 		definedRoute = field.Name

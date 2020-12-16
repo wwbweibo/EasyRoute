@@ -43,3 +43,11 @@ func (receiver *Channel) GetOutputBuffer() *ByteBuffer {
 func (receiver *Channel) GetInputChannel() chan bool {
 	return receiver.inputChan
 }
+
+func (receiver *Channel) GetOutputChannel() chan bool {
+	return receiver.outputChan
+}
+
+func (receiver *Channel) GetConnection() net.Conn {
+	return receiver.conn
+}

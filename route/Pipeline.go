@@ -1,4 +1,6 @@
-package Route
+package route
+
+import "github.com/wwbweibo/EasyRoute/http"
 
 type Pipeline struct {
 	handlerList []Middleware
@@ -17,6 +19,6 @@ func (receiver *Pipeline) build() RequestDelegate {
 	return app
 }
 
-type RequestDelegate func(ctx HttpContext)
+type RequestDelegate func(ctx *http.Context)
 
 type Middleware func(next RequestDelegate) RequestDelegate

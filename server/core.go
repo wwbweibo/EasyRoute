@@ -11,6 +11,7 @@ type Server struct {
 	port     string
 	signal   sync.Mutex
 	connChan chan net.Conn
+	handler  IConnectionHandler
 }
 
 func NewServer(host, port string) *Server {
@@ -27,6 +28,9 @@ func NewServer(host, port string) *Server {
 }
 
 func (receiver *Server) Serve() error {
+	if receiver.handler == nil {
+		panic("serve error, no handler registered")
+	}
 	server, err := net.Listen("tcp", receiver.address+":"+receiver.port)
 	if err != nil {
 		return err
@@ -37,7 +41,11 @@ func (receiver *Server) Serve() error {
 		if err != nil {
 			log.Fatal("error to accept request")
 		}
-		go HandleConnection(conn)
+		go receiver.handler.HandleConnection(conn)
 	}
 	return nil
+}
+
+func (receiver *Server) RegisterHandler(handler IConnectionHandler) {
+	receiver.handler = handler
 }

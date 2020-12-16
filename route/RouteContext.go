@@ -1,8 +1,8 @@
-package Route
+package route
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/wwbweibo/EasyRoute/Route/TypeManagement"
+	"github.com/wwbweibo/EasyRoute/http"
+	"github.com/wwbweibo/EasyRoute/route/TypeManagement"
 	"reflect"
 	"strings"
 )
@@ -24,8 +24,6 @@ type RouteContext struct {
 	app            RequestDelegate             // 最终的请求处理方法
 	typeCollection *TypeManagement.TypeCollect // 内置类型字典
 }
-
-type HttpContext *gin.Context
 
 type routeMap struct {
 	endPoint       string       // 保存终结点信息
@@ -104,14 +102,13 @@ func (receiver *RouteContext) RegisterTypeByInstance(instance interface{}) {
 
 // start http listen using gin
 func (self *RouteContext) Start(addr string) {
-	self.app = self.pipeline.build()
-	router := gin.Default()
-	rootGroup := router.Group("/*path")
-	rootGroup.Any("", self.route)
-	router.Run(addr)
+	//self.app = self.pipeline.build()
+	//router := gin.Default()
+	//rootGroup := router.Group("/*path")
+	//rootGroup.Any("", self.route)
+	//router.Run(addr)
 }
 
-func (self *RouteContext) route(c *gin.Context) {
-	ctx := HttpContext(c)
-	self.app(ctx)
+func (self *RouteContext) route(c *http.Context) {
+	//self.app(ctx)
 }
