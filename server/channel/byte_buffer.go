@@ -17,7 +17,8 @@ func NewByteBuffer() *ByteBuffer {
 	return &ByteBuffer{
 		readerIndex: 0,
 		writerIndex: 0,
-		buffer:      make([]byte, 0),
+		bufferSize:  102400,
+		buffer:      make([]byte, 102400),
 	}
 }
 

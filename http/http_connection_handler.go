@@ -32,8 +32,12 @@ func (handler *HttpConnectionHandler) handleRequestData(channel *channel.Channel
 		select {
 		case <-channel.GetInputChannel():
 			ctx := Context{}
-			ctx.Request = DecodeHttpRequest(channel.GetInputBuffer())
-			fmt.Println("Ready to process request")
+			req := DecodeHttpRequest(channel.GetInputBuffer())
+			if req != nil {
+				ctx.Request = req
+				fmt.Println("Ready to process request")
+			}
+
 			// todo : dispatch request
 		}
 	}
