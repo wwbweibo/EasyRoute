@@ -2,12 +2,14 @@ package http
 
 import (
 	"fmt"
+	"github.com/wwbweibo/EasyRoute/http/context"
 	"github.com/wwbweibo/EasyRoute/server/channel"
 	"log"
 	"net"
 )
 
 type HttpConnectionHandler struct {
+	server *Server
 }
 
 func (handler *HttpConnectionHandler) HandleConnection(conn net.Conn) {
@@ -31,14 +33,14 @@ func (handler *HttpConnectionHandler) handleRequestData(channel *channel.Channel
 	for true {
 		select {
 		case <-channel.GetInputChannel():
-			ctx := Context{}
 			req := DecodeHttpRequest(channel.GetInputBuffer())
+			ctx := context.NewContext(req)
 			if req != nil {
-				ctx.Request = req
 				fmt.Println("Ready to process request")
+				handler.server.routes.HandleRequest(ctx)
+				// write back response
+				ctx.Response.Write(channel)
 			}
-
-			// todo : dispatch request
 		}
 	}
 }

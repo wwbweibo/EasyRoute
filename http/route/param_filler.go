@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// 参数填充方法
+
 // fill up the param list
 func fillUp(request *http.Request, paramList *[]paramMap) []reflect.Value {
 	paramValueList := make([]reflect.Value, len(*paramList))

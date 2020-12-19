@@ -27,9 +27,10 @@ func (receiver *Channel) WriteRequestData(p []byte) {
 	receiver.inputChan <- true
 }
 
-func (receiver *Channel) WriteResponseData(p []byte) {
-	receiver.outputBuffer.Write(p)
+func (receiver *Channel) WriteResponseData(p []byte) (int, error) {
+	n, err := receiver.outputBuffer.Write(p)
 	receiver.outputChan <- true
+	return n, err
 }
 
 func (receiver *Channel) GetInputBuffer() *ByteBuffer {
@@ -50,4 +51,8 @@ func (receiver *Channel) GetOutputChannel() chan bool {
 
 func (receiver *Channel) GetConnection() net.Conn {
 	return receiver.conn
+}
+
+func (receiver *Channel) Write(p []byte) (n int, err error) {
+	return receiver.WriteResponseData(p)
 }

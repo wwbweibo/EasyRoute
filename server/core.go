@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -36,6 +37,7 @@ func (receiver *Server) Serve() error {
 		return err
 	}
 	defer server.Close()
+	fmt.Printf("Listen on address %s:%s\n", receiver.address, receiver.port)
 	for true {
 		conn, err := server.Accept()
 		if err != nil {

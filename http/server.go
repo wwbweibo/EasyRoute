@@ -1,11 +1,13 @@
 package http
 
 import (
+	"github.com/wwbweibo/EasyRoute/http/route"
 	"github.com/wwbweibo/EasyRoute/server"
 )
 
 type Server struct {
 	server *server.Server
+	routes *route.RouteContext
 }
 
 func NewHttpServer(host, port string) *Server {
@@ -22,6 +24,13 @@ func NewHttpServer(host, port string) *Server {
 }
 
 func (receiver *Server) Serve() error {
-	receiver.server.RegisterHandler(&HttpConnectionHandler{})
+	receiver.server.RegisterHandler(&HttpConnectionHandler{
+		server: receiver,
+	})
 	return receiver.server.Serve()
+}
+
+func (receiver *Server) RegisterHandlers(ctx *route.RouteContext) {
+	receiver.routes = ctx
+	receiver.routes.InitRoute()
 }

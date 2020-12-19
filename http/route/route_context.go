@@ -1,8 +1,8 @@
 package route
 
 import (
-	"github.com/wwbweibo/EasyRoute/http"
-	"github.com/wwbweibo/EasyRoute/route/TypeManagement"
+	"github.com/wwbweibo/EasyRoute/http/context"
+	"github.com/wwbweibo/EasyRoute/http/route/TypeManagement"
 	"reflect"
 	"strings"
 )
@@ -44,28 +44,21 @@ func NewRouteContext() *RouteContext {
 	return &routeContext
 }
 
-// Init the RouteContext and begin listen
-func (self *RouteContext) InitRouteWithGivenController(controllers []*Controller, listenAddr string) {
-	self.controllers = controllers
-	self.RouteParse()
-	self.Start(listenAddr)
-}
-
-// Init the RouteContext and begin listen
-func (self *RouteContext) InitRoute(listenAddr string) {
-	self.RouteParse()
-	self.Start(listenAddr)
+// 初始化 RouteContext 已准备进行处理
+func (receiver *RouteContext) InitRoute() {
+	receiver.RouteParse()
+	receiver.buildPipeline()
 }
 
 // add Controller to RouteContext
-func (self *RouteContext) AddController(controller Controller) {
-	self.controllers = append(self.controllers, &controller)
+func (receiver *RouteContext) AddController(controller Controller) {
+	receiver.controllers = append(receiver.controllers, &controller)
 }
 
 // find endpoint from given Controller list
-func (self *RouteContext) RouteParse() {
+func (receiver *RouteContext) RouteParse() {
 	set := make(map[string]routeMap)
-	for _, controller := range self.controllers {
+	for _, controller := range receiver.controllers {
 		controllerType := (*controller).GetControllerType()
 		controllerName := resolveControllerName(&controllerType, controller)
 		for i := 0; i < controllerType.NumField(); i++ {
@@ -89,7 +82,7 @@ func (self *RouteContext) RouteParse() {
 			}
 		}
 	}
-	self.routeMap = set
+	receiver.routeMap = set
 }
 
 func (receiver *RouteContext) AddMiddleware(middleware Middleware) {
@@ -100,15 +93,22 @@ func (receiver *RouteContext) RegisterTypeByInstance(instance interface{}) {
 	receiver.typeCollection.Register(instance)
 }
 
-// start http listen using gin
-func (self *RouteContext) Start(addr string) {
-	//self.app = self.pipeline.build()
-	//router := gin.Default()
-	//rootGroup := router.Group("/*path")
-	//rootGroup.Any("", self.route)
-	//router.Run(addr)
+func (receiver *RouteContext) HandleRequest(ctx *context.Context) {
+	receiver.app(ctx)
 }
 
-func (self *RouteContext) route(c *http.Context) {
-	//self.app(ctx)
+func (receiver *RouteContext) buildPipeline() {
+	receiver.app = receiver.pipeline.build()
 }
+
+//// start http listen using gin
+//func (self *RouteContext) Start(addr, port string) {
+//	self.app = self.pipeline.build()
+//	server := http.NewHttpServer(addr, port)
+//	server.RegisterHandlers(self)
+//	server.Serve()
+//}
+//
+//func (self *RouteContext) route(c *http.Context) {
+//	//self.app(ctx)
+//}

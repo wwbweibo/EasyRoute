@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/wwbweibo/EasyRoute/route"
+	"github.com/wwbweibo/EasyRoute/http"
+	"github.com/wwbweibo/EasyRoute/http/context"
+	"github.com/wwbweibo/EasyRoute/http/route"
 	"reflect"
 )
 
@@ -13,20 +15,22 @@ type ResultModel struct {
 }
 
 func main() {
+	server := http.NewHttpServer("0.0.0.0", "80")
+
+	// init handlers
 	routeContext := route.NewRouteContext()
 	routeContext.RegisterTypeByInstance(Person{})
 	outerMiddleware := func(next route.RequestDelegate) route.RequestDelegate {
-		return func(ctx route.HttpContext) {
-			fmt.Println("abc")
+		return func(ctx *context.Context) {
+			fmt.Println("ab")
 			next(ctx)
 		}
 	}
 
 	routeContext.AddMiddleware(outerMiddleware)
-
 	routeContext.AddMiddleware(
 		func(next route.RequestDelegate) route.RequestDelegate {
-			return func(ctx route.HttpContext) {
+			return func(ctx *context.Context) {
 				fmt.Println("before")
 				next(ctx)
 				fmt.Println("after")
@@ -35,7 +39,9 @@ func main() {
 	)
 
 	NewHomeController(routeContext)
-	routeContext.InitRoute(":8080")
+
+	server.RegisterHandlers(routeContext)
+	server.Serve()
 }
 
 type Person struct {
