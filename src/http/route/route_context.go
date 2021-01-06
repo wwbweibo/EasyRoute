@@ -1,8 +1,8 @@
 package route
 
 import (
-	"github.com/wwbweibo/EasyRoute/http/context"
-	"github.com/wwbweibo/EasyRoute/http/route/TypeManagement"
+	"github.com/wwbweibo/EasyRoute/src/http/context"
+	"github.com/wwbweibo/EasyRoute/src/http/route/TypeManagement"
 	"reflect"
 	"strings"
 )

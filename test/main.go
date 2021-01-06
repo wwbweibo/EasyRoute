@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/wwbweibo/EasyRoute/http"
-	"github.com/wwbweibo/EasyRoute/http/context"
-	"github.com/wwbweibo/EasyRoute/http/route"
+	"github.com/wwbweibo/EasyRoute/src/http"
+	"github.com/wwbweibo/EasyRoute/src/http/context"
+	"github.com/wwbweibo/EasyRoute/src/http/route"
 	"reflect"
 )
 

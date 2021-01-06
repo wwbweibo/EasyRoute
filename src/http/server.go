@@ -1,8 +1,8 @@
 package http
 
 import (
-	"github.com/wwbweibo/EasyRoute/http/route"
-	"github.com/wwbweibo/EasyRoute/server"
+	"github.com/wwbweibo/EasyRoute/src/http/route"
+	"github.com/wwbweibo/EasyRoute/src/server"
 )
 
 type Server struct {

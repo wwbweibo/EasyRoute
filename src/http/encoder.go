@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/wwbweibo/EasyRoute/server/channel"
+	"github.com/wwbweibo/EasyRoute/src/server/channel"
 	"mime/multipart"
 	"net/http"
 	"net/url"

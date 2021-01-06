@@ -2,8 +2,8 @@ package http
 
 import (
 	"fmt"
-	"github.com/wwbweibo/EasyRoute/http/context"
-	"github.com/wwbweibo/EasyRoute/server/channel"
+	"github.com/wwbweibo/EasyRoute/src/http/context"
+	"github.com/wwbweibo/EasyRoute/src/server/channel"
 	"log"
 	"net"
 )

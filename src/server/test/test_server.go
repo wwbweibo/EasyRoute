@@ -1,6 +1,6 @@
 package main
 
-import server2 "github.com/wwbweibo/EasyRoute/server"
+import server2 "github.com/wwbweibo/EasyRoute/src/server"
 
 func main() {
 	server := server2.NewServer("0.0.0.0", "80")

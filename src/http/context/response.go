@@ -31,7 +31,11 @@ func (r responseBody) Close() error {
 }
 
 func NewResponse() *Response {
-	return &Response{resp: &http.Response{}}
+	resp := &http.Response{}
+	resp.Proto = "HTTP/1.1"
+	resp.ProtoMinor = 1
+	resp.ProtoMajor = 1
+	return &Response{resp: resp}
 }
 
 func (response Response) GetHeader() http.Header {
