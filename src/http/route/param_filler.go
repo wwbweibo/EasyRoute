@@ -11,15 +11,15 @@ import (
 // 参数填充方法
 
 // fill up the param list
-func fillUp(request *http.Request, paramList *[]paramMap) []reflect.Value {
-	paramValueList := make([]reflect.Value, len(*paramList))
-	for idx, param := range *paramList {
+func fillUp(request *http.Request, paramList []*paramMap) []reflect.Value {
+	paramValueList := make([]reflect.Value, len(paramList))
+	for idx, param := range paramList {
 		if param.source == "FromQuery" {
-			paramValueList[idx] = fillUpFromQueryString(request, &param)
+			paramValueList[idx] = fillUpFromQueryString(request, param)
 		} else if param.source == "FromBody" {
-			paramValueList[idx] = fillUpFromBodyContent(request, &param)
+			paramValueList[idx] = fillUpFromBodyContent(request, param)
 		} else if param.source == "FromForm" {
-			paramValueList[idx] = fillUpFromForm(request, &param)
+			paramValueList[idx] = fillUpFromForm(request, param)
 		}
 	}
 	return paramValueList

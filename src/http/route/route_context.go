@@ -4,7 +4,6 @@ import (
 	"github.com/wwbweibo/EasyRoute/src/http/context"
 	"github.com/wwbweibo/EasyRoute/src/http/route/TypeManagement"
 	"reflect"
-	"strings"
 )
 
 var routeContext = RouteContext{
@@ -13,13 +12,15 @@ var routeContext = RouteContext{
 		handlerList: make([]Middleware, 0),
 	},
 	typeCollection: typeCollectionInstance,
+	endPointTrie:   NewEndPointTrie(),
 }
 
 var typeCollectionInstance = TypeManagement.NewTypeCollect()
 
 type RouteContext struct {
-	controllers    []*Controller               // 添加到上下文中的控制器
-	routeMap       map[string]routeMap         // 用于保存终结点和处理方法的映射
+	controllers []*Controller // 添加到上下文中的控制器
+	// routeMap       map[string]routeMap         // 用于保存终结点和处理方法的映射
+	endPointTrie   *EndPointTrie               // 终结点前缀树
 	pipeline       Pipeline                    // 请求处理管道
 	app            RequestDelegate             // 最终的请求处理方法
 	typeCollection *TypeManagement.TypeCollect // 内置类型字典
@@ -57,32 +58,7 @@ func (receiver *RouteContext) AddController(controller Controller) {
 
 // find endpoint from given Controller list
 func (receiver *RouteContext) RouteParse() {
-	set := make(map[string]routeMap)
-	for _, controller := range receiver.controllers {
-		controllerType := (*controller).GetControllerType()
-		controllerName := resolveControllerName(&controllerType, controller)
-		for i := 0; i < controllerType.NumField(); i++ {
-			field := controllerType.Field(i)
-			route := resolveMethodName(&field.Tag, &field)
-			method := resolveMethod(&field.Tag)
-			paramList := resolveParamName(&field.Tag, &field)
-
-			// if the route is not start with "/", then combine the controllerName and route
-			if !strings.HasPrefix(route, "/") {
-				route = "/" + controllerName + "/" + route
-			}
-
-			set[route] = routeMap{
-				endPoint:       route,
-				method:         strings.ToUpper(method),
-				controller:     controller,
-				controllerType: controllerType,
-				controllerName: controllerName,
-				paramMap:       paramList,
-			}
-		}
-	}
-	receiver.routeMap = set
+	scanEndPoint(receiver)
 }
 
 func (receiver *RouteContext) AddMiddleware(middleware Middleware) {
@@ -100,15 +76,3 @@ func (receiver *RouteContext) HandleRequest(ctx *context.Context) {
 func (receiver *RouteContext) buildPipeline() {
 	receiver.app = receiver.pipeline.build()
 }
-
-//// start http listen using gin
-//func (self *RouteContext) Start(addr, port string) {
-//	self.app = self.pipeline.build()
-//	server := http.NewHttpServer(addr, port)
-//	server.RegisterHandlers(self)
-//	server.Serve()
-//}
-//
-//func (self *RouteContext) route(c *http.Context) {
-//	//self.app(ctx)
-//}

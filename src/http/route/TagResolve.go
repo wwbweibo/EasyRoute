@@ -45,12 +45,12 @@ func resolveMethod(tag *reflect.StructTag) string {
 }
 
 // get the typeName and method name map
-func resolveParamName(tag *reflect.StructTag, field *reflect.StructField) *[]paramMap {
+func resolveParamName(tag *reflect.StructTag, field *reflect.StructField) []*paramMap {
 	paramNameString := tag.Get("param")
 	if paramNameString == "" {
 		return nil
 	}
-	paramList := make([]paramMap, 0)
+	paramList := make([]*paramMap, 0)
 	paramNameList := strings.Split(paramNameString, ",")
 	// get method signature
 	methodSignature := field.Type.String()
@@ -64,7 +64,7 @@ func resolveParamName(tag *reflect.StructTag, field *reflect.StructField) *[]par
 
 	for i := 0; i < len(paramNameList); i++ {
 		name := strings.Split(paramNameList[i], ":")
-		m := paramMap{
+		m := &paramMap{
 			paramType: paramType[i],
 		}
 
@@ -78,5 +78,5 @@ func resolveParamName(tag *reflect.StructTag, field *reflect.StructField) *[]par
 		paramList = append(paramList, m)
 	}
 
-	return &paramList
+	return paramList
 }
