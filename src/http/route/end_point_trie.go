@@ -1,5 +1,10 @@
 package route
 
+import (
+	"errors"
+	"strings"
+)
+
 // we use a trie tree to save all the EndPoint information
 // 									/
 //        |                 |                  |                          |
@@ -32,16 +37,20 @@ func NewEndPointTrie() *EndPointTrie {
 
 // add a EndPoint to map, if existing, will cover it
 func (t *EndPointTrie) AddEndPoint(endPoint *EndPoint) {
-
+	sections := strings.Split(endPoint.Template, "/")[1:]
+	t.root.Insert(sections, endPoint)
 }
 
 // get the first matched request handler for the given path
-func (t *EndPointTrie) GetFirstMatchedHandler(path string) RequestDelegate {
-	return nil
-}
-
-func (t *EndPointTrie) GetAllMatchedHandler(path string) []RequestDelegate {
-	return nil
+func (t *EndPointTrie) GetMatchedRoute(path string) (*EndPoint, error) {
+	if len(path) == 0 {
+		return nil, errors.New("an empty path is not valid")
+	}
+	if path[0] != '/' {
+		return nil, errors.New("a path must begin with '/'")
+	}
+	sections := strings.Split(path, "/")[1:]
+	return t.root.Search(sections), nil
 }
 
 func (t *EndPointTrie) GetRoot() *EndPointTrieNode {
@@ -74,23 +83,31 @@ func (n *EndPointTrieNode) Insert(routeSections []string, endPoint *EndPoint) {
 				next:     nil,
 				section:  section,
 			}
+			n.next = append(n.next, nextNode)
 		}
-
 		nextNode.Insert(routeSections[1:], endPoint)
-
 	}
 }
 
-func (n *EndPointTrieNode) Search(path string) RequestDelegate {
-	return nil
+func (n *EndPointTrieNode) Search(sections []string) *EndPoint {
+	if len(sections) == 0 {
+		return n.endPoint
+	} else {
+		next := n.searchBySection(sections[0])
+		if next != nil {
+			return next.Search(sections[1:])
+		} else {
+			return nil
+		}
+	}
 }
 
-func (n *EndPointTrieNode) searchBySection(path string) *EndPointTrieNode {
+func (n *EndPointTrieNode) searchBySection(section string) *EndPointTrieNode {
 	if n.next == nil {
 		n.next = make([]*EndPointTrieNode, 0)
 	}
 	for _, item := range n.next {
-		if item.section == path {
+		if item.section == section {
 			return item
 		}
 	}
