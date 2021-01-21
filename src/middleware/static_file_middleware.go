@@ -10,28 +10,32 @@ import (
 	"strings"
 )
 
-func GetStaticFileMiddleware(withCache bool) route.Middleware {
+func GetStaticFileMiddleware(contentRoot string, withCache bool) route.Middleware {
+	var wwwroot string
+	if contentRoot != "" {
+		wwwroot = contentRoot
+	} else {
+		dir, err := os.Getwd()
+		if err != nil {
+			panic("error to read current work directory")
+		}
+		wwwroot = dir + "/wwwroot"
+	}
 	middleWare := func(next route.RequestDelegate) route.RequestDelegate {
 		return func(ctx *context.Context) {
 			// a static file should math *.* patten
 			fmt.Println(ctx.Request.URL.Path)
 			if strings.Contains(ctx.Request.URL.Path, ".") {
-				dir, err := os.Getwd()
-				if err != nil {
-					ctx.Response.WriteBody([]byte("error to read file" + err.Error()))
-					ctx.Response.WriteHttpCode(http.StatusInternalServerError)
-					return
-				}
 				fileName := ctx.Request.URL.Path
-				fileData, err := ioutil.ReadFile(dir + "/wwwroot" + fileName)
+				fileData, err := ioutil.ReadFile(wwwroot + fileName)
 				if err != nil {
-					ctx.Response.WriteBody([]byte("error to read file : " + dir + "/wwwroot" + fileName + "\r\n" + err.Error()))
-					ctx.Response.WriteHttpCode(http.StatusInternalServerError)
+					ctx.Response.WriteBody([]byte("error to read file : " + wwwroot + fileName + "\r\n" + err.Error()))
+					ctx.Response.WriteHttpCode(http.StatusNotFound, "NotFound")
 					return
 				}
 
 				ctx.Response.WriteBody(fileData)
-				ctx.Response.WriteHttpCode(http.StatusOK)
+				ctx.Response.WriteHttpCode(http.StatusOK, "OK")
 			}
 		}
 	}

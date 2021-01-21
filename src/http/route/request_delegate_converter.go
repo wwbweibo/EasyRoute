@@ -16,16 +16,16 @@ func convertControllerMethodToRequestDelegate(method reflect.Value, params []*pa
 				result := method.Call(nil)[0]
 				data, _ := json.Marshal(result.Interface())
 				ctx.Response.WriteBody(data)
-				ctx.Response.WriteHttpCode(200)
+				ctx.Response.WriteHttpCode(http.StatusOK, "OK")
 			} else {
 				params := fillUp(request, params)
 				result := method.Call(params)[0]
 				data, _ := json.Marshal(result.Interface())
 				ctx.Response.WriteBody(data)
-				ctx.Response.WriteHttpCode(200)
+				ctx.Response.WriteHttpCode(http.StatusOK, "OK")
 			}
 		} else {
-			ctx.Response.WriteHttpCode(http.StatusMethodNotAllowed)
+			ctx.Response.WriteHttpCode(http.StatusMethodNotAllowed, "MethodNotAllowed")
 		}
 	}
 	return delegate

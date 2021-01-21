@@ -21,7 +21,7 @@ func (r responseBody) Read(p []byte) (n int, err error) {
 		return len(p), nil
 	} else {
 		copy(p, r.data)
-		return length, nil
+		return length, io.EOF
 	}
 }
 
@@ -46,8 +46,9 @@ func (response Response) WriteHeader(key string, value []string) {
 	response.resp.Header[key] = value
 }
 
-func (response Response) WriteHttpCode(code int) {
+func (response Response) WriteHttpCode(code int, status string) {
 	response.resp.StatusCode = code
+	response.resp.Status = status
 
 }
 

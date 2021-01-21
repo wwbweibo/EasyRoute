@@ -20,10 +20,10 @@ var reqHandler = requestHandler{
 		endpoint, err := routeContext.endPointTrie.GetMatchedRoute(path)
 
 		if err != nil {
-			ctx.Response.WriteHttpCode(http.StatusInternalServerError)
+			ctx.Response.WriteHttpCode(http.StatusInternalServerError, "InternalServerError")
 			ctx.Response.WriteBody([]byte(err.Error()))
 		} else if endpoint == nil || endpoint.handler == nil {
-			ctx.Response.WriteHttpCode(http.StatusNotFound)
+			ctx.Response.WriteHttpCode(http.StatusNotFound, "NotFound")
 			ctx.Response.WriteBody([]byte("404 Not Found"))
 		} else {
 			endpoint.handler(ctx)
