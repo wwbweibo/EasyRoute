@@ -33,9 +33,11 @@ func GetStaticFileMiddleware(contentRoot string, withCache bool) route.Middlewar
 					ctx.Response.WriteHttpCode(http.StatusNotFound, "NotFound")
 					return
 				}
-
 				ctx.Response.WriteBody(fileData)
 				ctx.Response.WriteHttpCode(http.StatusOK, "OK")
+				if strings.Contains(ctx.Request.URL.Path, ".js") {
+					ctx.Response.WriteHeader("Content-Type", []string{"application/x-javascript"})
+				}
 			}
 		}
 	}

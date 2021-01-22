@@ -10,7 +10,7 @@ import (
 func main() {
 	server := http.NewHttpServer("0.0.0.0", "80")
 	routeContext := route.NewRouteContext()
-	routeContext.AddMiddleware(middleware.GetStaticFileMiddleware(false))
+	routeContext.AddMiddleware(middleware.GetStaticFileMiddleware("../frontend/build", false))
 
 	controller.NewHomeController(routeContext)
 	server.RegisterHandlers(routeContext)

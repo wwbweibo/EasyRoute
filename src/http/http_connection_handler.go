@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"github.com/wwbweibo/EasyRoute/src/http/context"
 	"github.com/wwbweibo/EasyRoute/src/server/channel"
 	"log"
@@ -36,7 +35,6 @@ func (handler *HttpConnectionHandler) handleRequestData(channel *channel.Channel
 			req := DecodeHttpRequest(channel.GetInputBuffer())
 			ctx := context.NewContext(req)
 			if req != nil {
-				fmt.Println("Ready to process request")
 				handler.server.routes.HandleRequest(ctx)
 				// write back response
 				ctx.Response.Write(channel)
@@ -50,8 +48,13 @@ func (handler *HttpConnectionHandler) handleResponseData(channel *channel.Channe
 		select {
 		case <-channel.GetOutputChannel():
 			buf := make([]byte, 1024)
-			cnt, _ := channel.GetOutputBuffer().Read(buf)
-			channel.GetConnection().Write(buf[0:cnt])
+			for true {
+				cnt, err := channel.GetOutputBuffer().Read(buf)
+				if err != nil || cnt == 0 {
+					break
+				}
+				channel.GetConnection().Write(buf[0:cnt])
+			}
 		}
 
 	}

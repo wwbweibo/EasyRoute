@@ -1,6 +1,10 @@
 package channel
 
-import "math"
+import (
+	"fmt"
+	"io"
+	"math"
+)
 
 const (
 	maxBufferSize = math.MaxInt32
@@ -26,6 +30,10 @@ func (b *ByteBuffer) Read(p []byte) (n int, err error) {
 	readLength := len(p)
 	readableLength := b.getReadableBytesLength()
 
+	if readableLength == 0 {
+		return 0, io.EOF
+	}
+
 	if readableLength >= readLength {
 		copy(p, b.buffer[b.readerIndex:b.readerIndex+readLength])
 		b.readerIndex = b.readerIndex + readLength
@@ -38,6 +46,7 @@ func (b *ByteBuffer) Read(p []byte) (n int, err error) {
 }
 
 func (b *ByteBuffer) Write(p []byte) (n int, err error) {
+	fmt.Print(string(p))
 	writeLength := len(p)
 	writableLength := b.getWritableBytesLength()
 	if writeLength > writableLength {
@@ -82,17 +91,20 @@ func (b *ByteBuffer) getWritableBytesLength() int {
 }
 
 func (b *ByteBuffer) organizeSpace(expect int) {
-	// delete the used space
-	cleanableBytes := b.readerIndex
-	b.buffer = b.buffer[0:cleanableBytes]
-	b.bufferSize -= cleanableBytes
-	buffersize := 0
+	// keep unread bytes
+	readableLength := b.writerIndex - b.readerIndex
+	cache := b.buffer[b.readerIndex : b.readerIndex+readableLength]
+	buffersize := len(cache)
 	if expect > maxBufferSize {
 		buffersize = maxBufferSize
 	} else {
 		buffersize = expect
 	}
-	reclaimSpace := buffersize - b.bufferSize
-	b.buffer = append(b.buffer, make([]byte, reclaimSpace)...)
+	newBuffer := make([]byte, buffersize)
+	copy(newBuffer[0:len(cache)], cache[:])
+	b.buffer = newBuffer
 	b.bufferSize = buffersize
+	// reset the reader and writer index
+	b.readerIndex = 0
+	b.writerIndex = readableLength
 }
