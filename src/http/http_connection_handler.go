@@ -35,7 +35,7 @@ func (handler *HttpConnectionHandler) handleRequestData(channel *channel.Channel
 			req := DecodeHttpRequest(channel.GetInputBuffer())
 			ctx := context.NewContext(req)
 			if req != nil {
-				handler.server.routes.HandleRequest(ctx)
+				handler.server.requestDelegate(ctx)
 				// write back response
 				ctx.Response.Write(channel)
 			}

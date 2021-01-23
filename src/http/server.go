@@ -1,17 +1,15 @@
 package http
 
 import (
-	"github.com/wwbweibo/EasyRoute/src/http/route"
 	"github.com/wwbweibo/EasyRoute/src/server"
 )
 
 type Server struct {
-	server *server.Server
-	routes *route.RouteContext
+	server          *server.Server
+	requestDelegate RequestDelegate
 }
 
-func NewHttpServer(host, port string) *Server {
-
+func NewHttpServer(host, port string, delegate RequestDelegate) *Server {
 	if host == "" {
 		host = "0.0.0.0"
 	}
@@ -19,7 +17,8 @@ func NewHttpServer(host, port string) *Server {
 		port = "80"
 	}
 	return &Server{
-		server: server.NewServer(host, port),
+		requestDelegate: delegate,
+		server:          server.NewServer(host, port),
 	}
 }
 
@@ -28,9 +27,4 @@ func (receiver *Server) Serve() error {
 		server: receiver,
 	})
 	return receiver.server.Serve()
-}
-
-func (receiver *Server) RegisterHandlers(ctx *route.RouteContext) {
-	receiver.routes = ctx
-	receiver.routes.InitRoute()
 }

@@ -1,6 +1,7 @@
 package route
 
 import (
+	http2 "github.com/wwbweibo/EasyRoute/src/http"
 	"github.com/wwbweibo/EasyRoute/src/http/context"
 	"net/http"
 )
@@ -9,7 +10,7 @@ import (
 
 type requestHandler struct {
 	routeContext *RouteContext
-	delegate     RequestDelegate
+	delegate     http2.RequestDelegate
 }
 
 var reqHandler = requestHandler{

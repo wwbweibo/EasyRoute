@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	http2 "github.com/wwbweibo/EasyRoute/src/http"
 	"github.com/wwbweibo/EasyRoute/src/http/context"
 	"github.com/wwbweibo/EasyRoute/src/http/route"
 	"io/ioutil"
@@ -21,7 +22,7 @@ func GetStaticFileMiddleware(contentRoot string, withCache bool) route.Middlewar
 		}
 		wwwroot = dir + "/wwwroot"
 	}
-	middleWare := func(next route.RequestDelegate) route.RequestDelegate {
+	middleWare := func(next http2.RequestDelegate) http2.RequestDelegate {
 		return func(ctx *context.Context) {
 			// a static file should math *.* patten
 			fmt.Println(ctx.Request.URL.Path)
@@ -37,7 +38,11 @@ func GetStaticFileMiddleware(contentRoot string, withCache bool) route.Middlewar
 				ctx.Response.WriteHttpCode(http.StatusOK, "OK")
 				if strings.Contains(ctx.Request.URL.Path, ".js") {
 					ctx.Response.WriteHeader("Content-Type", []string{"application/x-javascript"})
+				} else if strings.Contains(ctx.Request.URL.Path, ".svg") {
+					ctx.Response.WriteHeader("Content-Type", []string{"image/svg+xml"})
 				}
+			} else {
+				next(ctx)
 			}
 		}
 	}

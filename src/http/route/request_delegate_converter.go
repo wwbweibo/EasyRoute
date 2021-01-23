@@ -2,12 +2,13 @@ package route
 
 import (
 	"encoding/json"
+	http2 "github.com/wwbweibo/EasyRoute/src/http"
 	"github.com/wwbweibo/EasyRoute/src/http/context"
 	"net/http"
 	"reflect"
 )
 
-func convertControllerMethodToRequestDelegate(method reflect.Value, params []*paramMap, httpMethod string) RequestDelegate {
+func convertControllerMethodToRequestDelegate(method reflect.Value, params []*paramMap, httpMethod string) http2.RequestDelegate {
 	delegate := func(ctx *context.Context) {
 		request := ctx.Request
 		if request.Method == httpMethod {

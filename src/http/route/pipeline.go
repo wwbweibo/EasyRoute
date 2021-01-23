@@ -1,7 +1,7 @@
 package route
 
 import (
-	"github.com/wwbweibo/EasyRoute/src/http/context"
+	"github.com/wwbweibo/EasyRoute/src/http"
 )
 
 // http 处理管道
@@ -14,8 +14,8 @@ func (receiver *Pipeline) AddMiddleware(middleware Middleware) {
 	receiver.handlerList = append(receiver.handlerList, middleware)
 }
 
-func (receiver *Pipeline) build() RequestDelegate {
-	var app RequestDelegate
+func (receiver *Pipeline) build() http.RequestDelegate {
+	var app http.RequestDelegate
 	app = reqHandler.delegate
 	for i := len(receiver.handlerList) - 1; i >= 0; i-- {
 		app = receiver.handlerList[i](app)
@@ -23,6 +23,4 @@ func (receiver *Pipeline) build() RequestDelegate {
 	return app
 }
 
-type RequestDelegate func(ctx *context.Context)
-
-type Middleware func(next RequestDelegate) RequestDelegate
+type Middleware func(next http.RequestDelegate) http.RequestDelegate

@@ -1,7 +1,6 @@
 package channel
 
 import (
-	"fmt"
 	"io"
 	"math"
 )
@@ -46,7 +45,6 @@ func (b *ByteBuffer) Read(p []byte) (n int, err error) {
 }
 
 func (b *ByteBuffer) Write(p []byte) (n int, err error) {
-	fmt.Print(string(p))
 	writeLength := len(p)
 	writableLength := b.getWritableBytesLength()
 	if writeLength > writableLength {
