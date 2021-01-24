@@ -2,6 +2,9 @@ package route
 
 import (
 	"errors"
+	"github.com/wwbweibo/EasyRoute/src/http"
+	"github.com/wwbweibo/EasyRoute/src/http/context"
+	http2 "net/http"
 	"strings"
 )
 
@@ -17,10 +20,11 @@ type EndPointTrie struct {
 
 // a EndPointTrieNode is a TrieTreeNode to save EndPoint information for single partten
 type EndPointTrieNode struct {
-	isEnd    bool
-	endPoint *EndPoint
-	next     []*EndPointTrieNode
-	section  string
+	isEnd          bool
+	endPoint       *EndPoint
+	next           []*EndPointTrieNode
+	section        string
+	defaultHandler http.RequestDelegate
 }
 
 // create a new instance of EndPointTrie
@@ -30,6 +34,10 @@ func NewEndPointTrie() *EndPointTrie {
 		endPoint: nil,
 		next:     make([]*EndPointTrieNode, 0),
 		section:  "/",
+		defaultHandler: func(ctx *context.Context) {
+			ctx.Response.WriteHttpCode(http2.StatusNotFound, "NotFound")
+			ctx.Response.WriteBody([]byte("404 Not Found"))
+		},
 	}
 
 	return &EndPointTrie{root: root}
@@ -42,15 +50,16 @@ func (t *EndPointTrie) AddEndPoint(endPoint *EndPoint) {
 }
 
 // get the first matched request handler for the given path
-func (t *EndPointTrie) GetMatchedRoute(path string) (*EndPoint, error) {
+func (t *EndPointTrie) GetMatchedRoute(path string) (*EndPointTrieNode, bool, error) {
 	if len(path) == 0 {
-		return nil, errors.New("an empty path is not valid")
+		return nil, false, errors.New("an empty path is not valid")
 	}
 	if path[0] != '/' {
-		return nil, errors.New("a path must begin with '/'")
+		return nil, false, errors.New("a path must begin with '/'")
 	}
 	sections := strings.Split(path, "/")[1:]
-	return t.root.Search(sections), nil
+	targetNode, isMatched := t.root.Search(sections)
+	return targetNode, isMatched, nil
 }
 
 func (t *EndPointTrie) GetRoot() *EndPointTrieNode {
@@ -89,19 +98,34 @@ func (n *EndPointTrieNode) Insert(routeSections []string, endPoint *EndPoint) {
 	}
 }
 
-func (n *EndPointTrieNode) Search(sections []string) *EndPoint {
+func (n *EndPointTrieNode) Search(sections []string) (*EndPointTrieNode, bool) {
 	if len(sections) == 0 {
-		return n.endPoint
+		// 表明当前节点就是要匹配的节点，直接返回当前节点
+		return n, true
 	} else {
+		// 搜索匹配的下一个节点
 		next := n.searchBySection(sections[0])
+		var targetNode *EndPointTrieNode
+		isMatched := false
 		if next != nil {
-			return next.Search(sections[1:])
-		} else {
-			return nil
+			// 搜索下一级
+			targetNode, isMatched = next.Search(sections[1:])
 		}
+		if targetNode == nil {
+			if n.defaultHandler != nil {
+				targetNode = n
+			} else {
+				targetNode = nil
+			}
+		}
+
+		return targetNode, isMatched
 	}
 }
 
+// 在当前节点的下级节点中搜索是否有匹配的节点
+// 如果有，返回对应的节点，
+// 否则返回空
 func (n *EndPointTrieNode) searchBySection(section string) *EndPointTrieNode {
 	if n.next == nil {
 		n.next = make([]*EndPointTrieNode, 0)

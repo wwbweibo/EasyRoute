@@ -4,7 +4,7 @@ import (
 	"github.com/wwbweibo/EasyRoute/src/http"
 	"github.com/wwbweibo/EasyRoute/src/http/context"
 	"github.com/wwbweibo/EasyRoute/src/http/route/TypeManagement"
-	"reflect"
+	"strings"
 )
 
 const (
@@ -37,15 +37,6 @@ type RouteContext struct {
 	listenAddress  string
 }
 
-type routeMap struct {
-	endPoint       string       // 保存终结点信息
-	method         string       // 保存请求方法信息
-	controller     *Controller  // 保存对应的控制器信息
-	controllerType reflect.Type // 保存控制器类型信息
-	controllerName string       // 控制器名称
-	paramMap       *[]paramMap  // 参数来源
-}
-
 type paramMap struct {
 	paramName string
 	paramType string
@@ -59,7 +50,7 @@ func NewRouteContext() *RouteContext {
 // 初始化 RouteContext 已准备进行处理
 func (receiver *RouteContext) InitRoute(prefix string) {
 	receiver.endpointPrefix = prefix
-	receiver.RouteParse(prefix)
+	receiver.routeParse(prefix)
 	receiver.buildPipeline()
 }
 
@@ -68,13 +59,14 @@ func (receiver *RouteContext) AddController(controller Controller) {
 	receiver.controllers = append(receiver.controllers, &controller)
 }
 
-// find endpoint from given Controller list
-func (receiver *RouteContext) RouteParse(prefix string) {
-	scanEndPoint(receiver, prefix)
-}
-
 func (receiver *RouteContext) AddMiddleware(middleware Middleware) {
 	receiver.pipeline.AddMiddleware(middleware)
+}
+
+// add a default action for given pattern
+func (receiver *RouteContext) AddDefaultHandler(pattern string, delegate http.RequestDelegate) {
+	target_node, _ := receiver.endPointTrie.GetRoot().Search(strings.Split(pattern, "/")[1:])
+	target_node.defaultHandler = delegate
 }
 
 func (receiver *RouteContext) RegisterTypeByInstance(instance interface{}) {
@@ -107,4 +99,9 @@ func (receiver *RouteContext) Serve() error {
 
 func (receiver *RouteContext) buildPipeline() {
 	receiver.app = receiver.pipeline.build()
+}
+
+// find endpoint from given Controller list
+func (receiver *RouteContext) routeParse(prefix string) {
+	scanEndPoint(receiver, prefix)
 }

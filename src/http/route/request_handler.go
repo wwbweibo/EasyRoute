@@ -18,16 +18,21 @@ var reqHandler = requestHandler{
 	delegate: func(ctx *context.Context) {
 		request := ctx.Request
 		path := request.URL.Path
-		endpoint, err := routeContext.endPointTrie.GetMatchedRoute(path)
+		targetNode, isMatched, err := routeContext.endPointTrie.GetMatchedRoute(path)
 
-		if err != nil {
-			ctx.Response.WriteHttpCode(http.StatusInternalServerError, "InternalServerError")
-			ctx.Response.WriteBody([]byte(err.Error()))
-		} else if endpoint == nil || endpoint.handler == nil {
-			ctx.Response.WriteHttpCode(http.StatusNotFound, "NotFound")
-			ctx.Response.WriteBody([]byte("404 Not Found"))
+		if isMatched {
+			endpoint := targetNode.endPoint
+			if err != nil {
+				ctx.Response.WriteHttpCode(http.StatusInternalServerError, "InternalServerError")
+				ctx.Response.WriteBody([]byte(err.Error()))
+			} else if endpoint == nil || endpoint.handler == nil {
+				ctx.Response.WriteHttpCode(http.StatusNotFound, "NotFound")
+				ctx.Response.WriteBody([]byte("404 Not Found"))
+			} else {
+				endpoint.handler(ctx)
+			}
 		} else {
-			endpoint.handler(ctx)
+			targetNode.defaultHandler(ctx)
 		}
 	},
 }
