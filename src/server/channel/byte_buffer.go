@@ -3,6 +3,7 @@ package channel
 import (
 	"io"
 	"math"
+	"sync"
 )
 
 const (
@@ -14,6 +15,7 @@ type ByteBuffer struct {
 	writerIndex int
 	bufferSize  int
 	buffer      []byte
+	lock        sync.Mutex
 }
 
 func NewByteBuffer() *ByteBuffer {
@@ -26,6 +28,8 @@ func NewByteBuffer() *ByteBuffer {
 }
 
 func (b *ByteBuffer) Read(p []byte) (n int, err error) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
 	readLength := len(p)
 	readableLength := b.getReadableBytesLength()
 
@@ -45,6 +49,8 @@ func (b *ByteBuffer) Read(p []byte) (n int, err error) {
 }
 
 func (b *ByteBuffer) Write(p []byte) (n int, err error) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
 	writeLength := len(p)
 	writableLength := b.getWritableBytesLength()
 	if writeLength > writableLength {

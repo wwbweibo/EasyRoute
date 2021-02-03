@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bufio"
 	"github.com/wwbweibo/EasyRoute/src/server/channel"
 	"mime/multipart"
 	"net/http"
@@ -25,6 +26,11 @@ func DecodeHttpRequest(buffer *channel.ByteBuffer) *http.Request {
 		return nil
 	}
 	return &request
+}
+
+func DecodeHttpRequest2(buffer *channel.ByteBuffer) *http.Request {
+	request, _ := http.ReadRequest(bufio.NewReader(buffer))
+	return request
 }
 
 // decode the http protocol request line

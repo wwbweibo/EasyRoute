@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/wwbweibo/EasyRoute/example/controller"
 	"github.com/wwbweibo/EasyRoute/src/http/delegate"
 	"github.com/wwbweibo/EasyRoute/src/http/route"
@@ -10,9 +11,12 @@ import (
 func main() {
 	routeContext := route.NewRouteContext()
 	controller.NewHomeController(routeContext)
-	routeContext.AddMiddleware(middleware.GetStaticFileMiddleware("../frontend/build", false))
+	routeContext.AddMiddleware(middleware.GetStaticFileMiddleware("", false))
 	routeContext.InitRoute("/api")
-	routeContext.AddDefaultHandler("/", delegate.GetDefaultDelegate("../frontend/build"))
+	routeContext.AddDefaultHandler("/", delegate.GetDefaultDelegate(""))
 	routeContext.AddDefaultHandler("/api", delegate.NotFoundDelegate)
-	routeContext.WithServer("", "0.0.0.0", "80").Serve()
+	err := routeContext.WithServer("", "0.0.0.0", "80").Serve()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }

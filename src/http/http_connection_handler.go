@@ -32,7 +32,7 @@ func (handler *HttpConnectionHandler) handleRequestData(channel *channel.Channel
 	for true {
 		select {
 		case <-channel.GetInputChannel():
-			req := DecodeHttpRequest(channel.GetInputBuffer())
+			req := DecodeHttpRequest2(channel.GetInputBuffer()) //DecodeHttpRequest(channel.GetInputBuffer())
 			ctx := context.NewContext(req)
 			if req != nil {
 				handler.server.requestDelegate(ctx)
