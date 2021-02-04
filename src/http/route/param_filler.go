@@ -64,20 +64,13 @@ func fillUpFromPath(request http.Request, param *paramMap) reflect.Value {
 }
 
 func deserializeJsonObject(typeName string, jsonData []byte) reflect.Value {
-	t, _ := typeCollectionInstance.TypeOf(typeName)
 	instance, err := typeCollectionInstance.InstanceOf(typeName)
 	if err != nil {
 		panic("error to handle request")
 	}
-	instance2 := reflect.New(*t)
 	err = json.Unmarshal(jsonData, &instance)
 	if err != nil {
 		panic("error to handle request, data error")
 	}
-	for i := 0; i < instance2.NumField(); i++ {
-		field := instance2.Field(i)
-		fieldValue := instance.(map[string]interface{})[(*t).Field(i).Name]
-		field.Set(reflect.ValueOf(fieldValue))
-	}
-	return instance2
+	return instance
 }

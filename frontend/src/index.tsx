@@ -9,7 +9,8 @@ import Login from "./components/Login/Login";
 ReactDOM.render(
   <React.StrictMode>
       <BrowserRouter>
-          <Route path='/Login' ><Login /></Route>
+          <Route exact path='/Login' ><Login /></Route>
+          <Route exact path='/'><App /></Route>
       </BrowserRouter>
   </React.StrictMode>,
   document.getElementById('root')

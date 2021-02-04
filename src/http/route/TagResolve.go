@@ -36,7 +36,7 @@ func resolveMethodName(tag *reflect.StructTag, field *reflect.StructField) strin
 
 // get the request method from tag
 func resolveMethod(tag *reflect.StructTag) string {
-	method := (*tag).Get("Method")
+	method := (*tag).Get("method")
 	// the user defined route is empty, field name as default
 	if method == "" {
 		method = "GET"

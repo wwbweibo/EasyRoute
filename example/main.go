@@ -11,9 +11,14 @@ import (
 func main() {
 	routeContext := route.NewRouteContext()
 	controller.NewHomeController(routeContext)
-	routeContext.AddMiddleware(middleware.GetStaticFileMiddleware("", false))
+	controller.NewUserController(routeContext)
+	routeContext.RegisterTypeByInstance(controller.User{
+		Username: "",
+		Password: "",
+	})
+	routeContext.AddMiddleware(middleware.GetStaticFileMiddleware("/home/weibo/data/Code/Go/EasyRoute/frontend/build", false))
 	routeContext.InitRoute("/api")
-	routeContext.AddDefaultHandler("/", delegate.GetDefaultDelegate(""))
+	routeContext.AddDefaultHandler("/", delegate.GetDefaultDelegate("/home/weibo/data/Code/Go/EasyRoute/frontend/build"))
 	routeContext.AddDefaultHandler("/api", delegate.NotFoundDelegate)
 	err := routeContext.WithServer("", "0.0.0.0", "80").Serve()
 	if err != nil {

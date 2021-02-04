@@ -12,7 +12,7 @@ export default class Login extends React.Component<any, any> {
         wrapperCol: { offset: 8, span: 16 },
     };
     onFinish = (values: any) => {
-        axios.post("/api/user/login", {
+        axios.post("/api/User/Login", {
             username: values['username'],
             password: values['password']
         }).then(function (response) {
