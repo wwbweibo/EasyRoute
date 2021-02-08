@@ -66,14 +66,14 @@ func TestAddEndPointTest(t *testing.T) {
 	tree := route.NewEndPointTrie()
 	endPoint := route.EndPoint{Template: "/Home/Index"}
 	tree.AddEndPoint(&endPoint)
-	e, err := tree.GetMatchedRoute("/Home/Index")
+	e, _, err := tree.GetMatchedRoute("/Home/Index")
 	if err != nil {
 		t.Fail()
 	}
 	if e == nil {
 		t.Error("endpoint is  nil")
 	}
-	if e.Template != "/Home/Index" {
+	if e.GetEndPoint().Template != "/Home/Index" {
 		t.Fail()
 	}
 

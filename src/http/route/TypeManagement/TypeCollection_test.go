@@ -49,7 +49,7 @@ func Test_create_instance(t *testing.T) {
 	if err != nil {
 		t.Error("try to create instance error", err)
 	}
-	if _, ok := c.(testType); !ok {
+	if _, ok := c.Interface().(testType); !ok {
 		t.Error("Error to cast type")
 	}
 }
