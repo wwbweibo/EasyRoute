@@ -1,12 +1,12 @@
 package main
 
 //
+//
 //import (
-//	"fmt"
-//	"github.com/wwbweibo/EasyRoute/src/http"
-//	"github.com/wwbweibo/EasyRoute/src/http/context"
-//	"github.com/wwbweibo/EasyRoute/src/http/route"
-//	"reflect"
+//    "context"
+//    "fmt"
+//    "github.com/wwbweibo/EasyRoute/internal/route"
+//    "reflect"
 //)
 //
 //type ResultModel struct {
@@ -45,10 +45,7 @@ package main
 //	server.Serve()
 //}
 //
-//type Person struct {
-//	Name string  `json:"Name"`
-//	Age  float64 `json:"Age"`
-//}
+//
 //
 //type HomeController struct {
 //	Index       func() string              `method:"Get"`

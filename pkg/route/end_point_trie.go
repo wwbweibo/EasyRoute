@@ -2,8 +2,8 @@ package route
 
 import (
 	"errors"
-	"github.com/wwbweibo/EasyRoute/src/http"
-	"github.com/wwbweibo/EasyRoute/src/http/context"
+	"github.com/wwbweibo/EasyRoute/pkg/delegates"
+	"github.com/wwbweibo/EasyRoute/pkg/http"
 	http2 "net/http"
 	"strings"
 )
@@ -14,17 +14,18 @@ import (
 //  Controller1       Controller2         Controller3 				Controller4
 //  |    |    |       |    |     |       |     |     |              |      |     |
 // m1   m2   m3     m1    m2     m3     m1    m2     m3            m1     m2     m3
+
 type EndPointTrie struct {
 	root *EndPointTrieNode
 }
 
-// a EndPointTrieNode is a TrieTreeNode to save EndPoint information for single partten
+// EndPointTrieNode is a TrieTreeNode to save EndPoint information for single partten
 type EndPointTrieNode struct {
 	isEnd          bool
 	endPoint       *EndPoint
 	next           []*EndPointTrieNode
 	section        string
-	defaultHandler http.RequestDelegate
+	defaultHandler delegates.RequestDelegate
 }
 
 // create a new instance of EndPointTrie
@@ -34,9 +35,9 @@ func NewEndPointTrie() *EndPointTrie {
 		endPoint: nil,
 		next:     make([]*EndPointTrieNode, 0),
 		section:  "/",
-		defaultHandler: func(ctx *context.Context) {
-			ctx.Response.WriteHttpCode(http2.StatusNotFound, "NotFound")
-			ctx.Response.WriteBody([]byte("404 Not Found"))
+		defaultHandler: func(ctx *http.HttpContext) {
+			ctx.Response.WriteHeader(http2.StatusNotFound)
+			ctx.Response.Write([]byte("404 Not Found"))
 		},
 	}
 

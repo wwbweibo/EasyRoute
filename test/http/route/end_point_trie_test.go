@@ -1,7 +1,7 @@
 package route_test
 
 import (
-	"github.com/wwbweibo/EasyRoute/src/http/route"
+	"github.com/wwbweibo/EasyRoute/pkg/route"
 	"strings"
 	"testing"
 )

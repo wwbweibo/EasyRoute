@@ -1,8 +1,8 @@
 package route
 
 import (
-	http2 "github.com/wwbweibo/EasyRoute/src/http"
-	"github.com/wwbweibo/EasyRoute/src/http/context"
+	"github.com/wwbweibo/EasyRoute/pkg/delegates"
+	http2 "github.com/wwbweibo/EasyRoute/pkg/http"
 	"net/http"
 )
 
@@ -10,12 +10,12 @@ import (
 
 type requestHandler struct {
 	routeContext *RouteContext
-	delegate     http2.RequestDelegate
+	delegate     delegates.RequestDelegate
 }
 
 var reqHandler = requestHandler{
 	routeContext: &routeContext,
-	delegate: func(ctx *context.Context) {
+	delegate: func(ctx *http2.HttpContext) {
 		request := ctx.Request
 		path := request.URL.Path
 		targetNode, isMatched, err := routeContext.endPointTrie.GetMatchedRoute(path)
@@ -23,11 +23,11 @@ var reqHandler = requestHandler{
 		if isMatched {
 			endpoint := targetNode.endPoint
 			if err != nil {
-				ctx.Response.WriteHttpCode(http.StatusInternalServerError, "InternalServerError")
-				ctx.Response.WriteBody([]byte(err.Error()))
+				ctx.Response.WriteHeader(http.StatusInternalServerError)
+				ctx.Response.Write([]byte(err.Error()))
 			} else if endpoint == nil || endpoint.handler == nil {
-				ctx.Response.WriteHttpCode(http.StatusNotFound, "NotFound")
-				ctx.Response.WriteBody([]byte("404 Not Found"))
+				ctx.Response.WriteHeader(http.StatusNotFound)
+				ctx.Response.Write([]byte("404 Not Found"))
 			} else {
 				endpoint.handler(ctx)
 			}

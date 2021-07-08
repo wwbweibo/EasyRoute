@@ -1,4 +1,4 @@
-package TypeManagement
+package types
 
 import "testing"
 
@@ -15,7 +15,7 @@ func Test_new_instance(t *testing.T) {
 func Test_register_type_by_instance(t *testing.T) {
 	inst := NewTypeCollect()
 	inst.Register(testType{})
-	if _, ok := inst.types["TypeManagement.testType"]; !ok {
+	if _, ok := inst.types["types.testType"]; !ok {
 		t.Error("Error to get Registered type")
 	}
 }
@@ -23,7 +23,7 @@ func Test_register_type_by_instance(t *testing.T) {
 func Test_register_type_by_instancePointer(t *testing.T) {
 	inst := NewTypeCollect()
 	inst.Register(&testType{})
-	if _, ok := inst.types["TypeManagement.testType"]; !ok {
+	if _, ok := inst.types["types.testType"]; !ok {
 		t.Error("Error to get Registered type")
 	}
 }
@@ -45,7 +45,7 @@ func Test_create_instance(t *testing.T) {
 	inst := NewTypeCollect()
 	inst.Register(testType{})
 
-	c, err := inst.InstanceOf("TypeManagement.testType")
+	c, err := inst.InstanceOf("types.testType")
 	if err != nil {
 		t.Error("try to create instance error", err)
 	}
@@ -56,7 +56,7 @@ func Test_create_instance(t *testing.T) {
 
 func Test_create_instance_type_not_register(t *testing.T) {
 	inst := NewTypeCollect()
-	_, err := inst.InstanceOf("TypeManagement.testType")
+	_, err := inst.InstanceOf("types.testType")
 	if err == nil {
 		t.Error("test failed, error should not be empty")
 	}

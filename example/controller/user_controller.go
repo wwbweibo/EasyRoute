@@ -2,7 +2,7 @@ package controller
 
 import (
 	"fmt"
-	"github.com/wwbweibo/EasyRoute/src/http/route"
+	"github.com/wwbweibo/EasyRoute/pkg/route"
 	"reflect"
 )
 

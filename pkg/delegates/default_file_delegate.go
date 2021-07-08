@@ -1,15 +1,14 @@
-package delegate
+package delegates
 
 import (
-	http2 "github.com/wwbweibo/EasyRoute/src/http"
-	"github.com/wwbweibo/EasyRoute/src/http/context"
+	http2 "github.com/wwbweibo/EasyRoute/pkg/http"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 )
 
-func GetDefaultDelegate(contentRoot string) http2.RequestDelegate {
+func GetDefaultDelegate(contentRoot string) RequestDelegate {
 	var wwwroot string
 	if contentRoot != "" {
 		wwwroot = contentRoot
@@ -26,18 +25,19 @@ func GetDefaultDelegate(contentRoot string) http2.RequestDelegate {
 		"/default.html",
 		"/default.htm",
 	}
-	return func(ctx *context.Context) {
+	return func(ctx *http2.HttpContext) {
 		for _, fileName := range defaultFileList {
 			fileData, err := ioutil.ReadFile(wwwroot + fileName)
 			if err != nil {
 				continue
 			}
-			ctx.Response.WriteBody(fileData)
-			ctx.Response.WriteHttpCode(http.StatusOK, "OK")
+
+			ctx.Response.Write(fileData)
+			ctx.Response.WriteHeader(http.StatusOK)
 			if strings.Contains(ctx.Request.URL.Path, ".js") {
-				ctx.Response.WriteHeader("Content-Type", []string{"application/x-javascript"})
+				ctx.Response.Header().Add("Content-Type", "application/x-javascript")
 			} else if strings.Contains(ctx.Request.URL.Path, ".svg") {
-				ctx.Response.WriteHeader("Content-Type", []string{"image/svg+xml"})
+				ctx.Response.Header().Set("Content-Type", "image/svg+xml")
 			}
 			return
 		}

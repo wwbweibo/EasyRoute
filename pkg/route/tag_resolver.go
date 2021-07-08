@@ -1,14 +1,15 @@
 package route
 
 import (
+	"github.com/wwbweibo/EasyRoute/pkg/controllers"
 	"reflect"
 	"strings"
 )
 
 // this file contains the method to resolve information from tag
 
-// get controller name from StructTag or instance
-func resolveControllerName(controllerType *reflect.Type, controller *Controller) string {
+// ResolveControllerName get controller name from StructTag or instance
+func ResolveControllerName(controllerType *reflect.Type, controller *controllers.Controller) string {
 	//  try to get user defined controller name, it must be controllerName field
 	controllerNameValue := reflect.ValueOf(controller).Elem().Elem().Elem().FieldByName("controllerName")
 	controllerName := ""
@@ -24,8 +25,8 @@ func resolveControllerName(controllerType *reflect.Type, controller *Controller)
 	return controllerName
 }
 
-// get the method name from tag
-func resolveMethodName(tag *reflect.StructTag, field *reflect.StructField) string {
+// ResolveMethodName get the method name from tag
+func ResolveMethodName(tag *reflect.StructTag, field *reflect.StructField) string {
 	definedRoute := (*tag).Get("route")
 	// the user defined route is empty, field name as default
 	if definedRoute == "" {
@@ -34,8 +35,8 @@ func resolveMethodName(tag *reflect.StructTag, field *reflect.StructField) strin
 	return definedRoute
 }
 
-// get the request method from tag
-func resolveMethod(tag *reflect.StructTag) string {
+// ResolveMethod get the request method from tag
+func ResolveMethod(tag *reflect.StructTag) string {
 	method := (*tag).Get("method")
 	// the user defined route is empty, field name as default
 	if method == "" {
@@ -44,8 +45,8 @@ func resolveMethod(tag *reflect.StructTag) string {
 	return method
 }
 
-// get the typeName and method name map
-func resolveParamName(tag *reflect.StructTag, field *reflect.StructField) []*paramMap {
+// ResolveParamName get the typeName and method name map
+func ResolveParamName(tag *reflect.StructTag, field *reflect.StructField) []*paramMap {
 	paramNameString := tag.Get("param")
 	if paramNameString == "" {
 		return nil

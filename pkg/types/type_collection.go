@@ -1,4 +1,4 @@
-package TypeManagement
+package types
 
 import (
 	"errors"
