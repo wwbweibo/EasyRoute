@@ -4,6 +4,7 @@ import (
 	"github.com/wwbweibo/EasyRoute/pkg/delegates"
 	http2 "github.com/wwbweibo/EasyRoute/pkg/http"
 	"net/http"
+	"strings"
 )
 
 // http请发分发
@@ -17,7 +18,7 @@ var reqHandler = requestHandler{
 	routeContext: &routeContext,
 	delegate: func(ctx *http2.HttpContext) {
 		request := ctx.Request
-		path := request.URL.Path
+		path := strings.ToLower(request.URL.Path)
 		targetNode, isMatched, err := routeContext.endPointTrie.GetMatchedRoute(path)
 
 		if isMatched {

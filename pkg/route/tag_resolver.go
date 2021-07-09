@@ -22,7 +22,7 @@ func ResolveControllerName(controllerType *reflect.Type, controller *controllers
 		patharr := strings.Split((*controllerType).String(), ".")
 		controllerName = strings.Replace(patharr[len(patharr)-1], "Controller", "", 1)
 	}
-	return controllerName
+	return strings.ToLower(controllerName)
 }
 
 // ResolveMethodName get the method name from tag
@@ -32,7 +32,7 @@ func ResolveMethodName(tag *reflect.StructTag, field *reflect.StructField) strin
 	if definedRoute == "" {
 		definedRoute = field.Name
 	}
-	return definedRoute
+	return strings.ToLower(definedRoute)
 }
 
 // ResolveMethod get the request method from tag

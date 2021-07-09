@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// will scan all registered controllers, and Convert each method to a request delegate
+// scanEndPoint will scan all registered controllers, and Convert each method to a request delegate
 func scanEndPoint(routeContext *RouteContext, prefix string) {
 	for _, controller := range routeContext.controllers {
 		controllerType := (*controller).GetControllerType()
@@ -20,20 +20,22 @@ func scanEndPoint(routeContext *RouteContext, prefix string) {
 			if !strings.HasPrefix(route, "/") {
 				route = "/" + controllerName + "/" + route
 			}
-			if prefix != "" {
+			if prefix != "" && prefix != "/" {
 				route = prefix + route
 			}
 
+			// get the method body and convert it to a request delegate
 			methodValue := reflect.ValueOf(*controller).Elem().Field(i)
-
 			requestHandler := convertControllerMethodToRequestDelegate(methodValue, paramList, method)
 
+			// init end point
 			endpoint := &EndPoint{
 				Template: route,
 				method:   method,
 				handler:  requestHandler,
 			}
 
+			// and it to tree
 			routeContext.endPointTrie.AddEndPoint(endpoint)
 		}
 	}

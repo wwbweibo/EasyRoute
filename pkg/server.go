@@ -7,15 +7,15 @@ import (
 )
 
 type Server struct {
+	config       Config
 	routeContext *route.RouteContext
 	ctx          context.Context
 }
 
-func NewServer(ctx context.Context) (*Server, error) {
+func NewServer(ctx context.Context, config Config) (*Server, error) {
 	routeContext := route.NewRouteContext()
-	routeContext.InitRoute("/")
-
 	return &Server{
+		config:       config,
 		routeContext: routeContext,
 		ctx:          ctx,
 	}, nil
@@ -26,6 +26,6 @@ func (server *Server) AddController(controller controllers.Controller) {
 }
 
 func (server *Server) Serve() error {
-	server.routeContext.InitRoute("/")
+	server.routeContext.InitRoute(server.config.HttpConfig.Prefix)
 	return server.routeContext.Serve()
 }

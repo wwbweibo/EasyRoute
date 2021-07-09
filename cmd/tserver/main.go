@@ -9,7 +9,14 @@ import (
 
 func main() {
 	ctx := context.Background()
-	server, _ := pkg.NewServer(ctx)
+	config := pkg.Config{
+		HttpConfig: pkg.HttpConfig{
+			Prefix: "/",
+			Host:   "0.0.0.0",
+			Port:   "8080",
+		},
+	}
+	server, _ := pkg.NewServer(ctx, config)
 	server.AddController(NewHomeController())
 	fmt.Println(server.Serve())
 }

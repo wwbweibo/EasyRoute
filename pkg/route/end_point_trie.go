@@ -50,7 +50,7 @@ func (t *EndPointTrie) AddEndPoint(endPoint *EndPoint) {
 	t.root.Insert(sections, endPoint)
 }
 
-// get the first matched request handler for the given path
+// GetMatchedRoute get the first matched request handler for the given path
 func (t *EndPointTrie) GetMatchedRoute(path string) (*EndPointTrieNode, bool, error) {
 	if len(path) == 0 {
 		return nil, false, errors.New("an empty path is not valid")
