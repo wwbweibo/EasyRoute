@@ -1,10 +1,13 @@
 package route
 
 import (
+	cctx "context"
+	"errors"
 	"github.com/wwbweibo/EasyRoute/pkg/controllers"
 	"github.com/wwbweibo/EasyRoute/pkg/delegates"
 	iHttp "github.com/wwbweibo/EasyRoute/pkg/http"
 	TypeManagement2 "github.com/wwbweibo/EasyRoute/pkg/types"
+	"golang.org/x/sync/errgroup"
 	"net/http"
 	"strings"
 )
@@ -23,6 +26,7 @@ type RouteContext struct {
 	serverType     string
 	listenPort     string
 	listenAddress  string
+	ctx            cctx.Context
 }
 
 type paramMap struct {
@@ -31,7 +35,8 @@ type paramMap struct {
 	source    string
 }
 
-func NewRouteContext() *RouteContext {
+func NewRouteContext(ctx cctx.Context) *RouteContext {
+	routeContext.ctx = ctx
 	return &routeContext
 }
 
@@ -66,15 +71,27 @@ func (context *RouteContext) HandleRequest(ctx *iHttp.HttpContext) {
 }
 
 func (context *RouteContext) Serve() error {
-	http.HandleFunc(context.endpointPrefix, func(writer http.ResponseWriter, request *http.Request) {
-		ctx := iHttp.HttpContext{
-			request,
-			writer,
-		}
-		context.app(&ctx)
-	})
-	return http.ListenAndServe(":8080", nil)
+	handler := &httpRequestHandler{
+		context: context,
+	}
+	server := http.Server{}
+	server.Addr = ":8080"
+	server.Handler = handler
 
+	group, ctx := errgroup.WithContext(context.ctx)
+	group.Go(func() error {
+		go func() {
+			<-ctx.Done()
+			server.Shutdown(ctx)
+		}()
+		return server.ListenAndServe()
+		// return http.ListenAndServe(":8080", nil)
+	})
+	group.Go(func() error {
+		<-ctx.Done()
+		return errors.New("http server exit due to outer context done")
+	})
+	return group.Wait()
 }
 
 func (context *RouteContext) buildPipeline() {

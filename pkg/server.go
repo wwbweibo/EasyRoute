@@ -13,7 +13,7 @@ type Server struct {
 }
 
 func NewServer(ctx context.Context, config Config) (*Server, error) {
-	routeContext := route.NewRouteContext()
+	routeContext := route.NewRouteContext(ctx)
 	return &Server{
 		config:       config,
 		routeContext: routeContext,
