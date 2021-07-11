@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/wwbweibo/EasyRoute/logger"
 	"github.com/wwbweibo/EasyRoute/pkg"
 	"reflect"
 )
@@ -18,6 +19,7 @@ func main() {
 	}
 	server, _ := pkg.NewServer(ctx, config)
 	server.AddController(NewHomeController())
+	logger.Info("start server")
 	err := server.Serve()
 	fmt.Println(err.Error())
 }
