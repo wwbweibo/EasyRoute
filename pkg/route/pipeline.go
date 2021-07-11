@@ -10,13 +10,19 @@ type Pipeline struct {
 	handlerList []delegates.Middleware
 }
 
+func NewPipeline() *Pipeline {
+	return &Pipeline{
+		handlerList: []delegates.Middleware{},
+	}
+}
+
 func (receiver *Pipeline) AddMiddleware(middleware delegates.Middleware) {
 	receiver.handlerList = append(receiver.handlerList, middleware)
 }
 
-func (receiver *Pipeline) build() delegates.RequestDelegate {
+func (receiver *Pipeline) Build(trie *EndPointTrie) delegates.RequestDelegate {
 	var app delegates.RequestDelegate
-	app = reqHandler.delegate
+	app = newRequestHandler(trie).delegate
 	for i := len(receiver.handlerList) - 1; i >= 0; i-- {
 		app = receiver.handlerList[i](app)
 	}

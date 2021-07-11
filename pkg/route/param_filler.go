@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+type paramMap struct {
+	paramName string
+	paramType string
+	source    string
+}
+
 // 参数填充方法
 
 // fill up the param list

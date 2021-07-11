@@ -1,14 +1,15 @@
 package route
 
 import (
+	"github.com/wwbweibo/EasyRoute/pkg/controllers"
 	"reflect"
 	"strings"
 )
 
-// scanEndPoint will scan all registered controllers, and Convert each method to a request delegate
-func scanEndPoint(routeContext *RouteContext, prefix string) {
-	for _, controller := range routeContext.controllers {
-		controllerType := (*controller).GetControllerType()
+// ScanEndPoint will scan all registered controllers, and Convert each method to a request delegate
+func ScanEndPoint(endPointTrie *EndPointTrie, controllers []controllers.Controller, prefix string) {
+	for _, controller := range controllers {
+		controllerType := controller.GetControllerType()
 		controllerName := ResolveControllerName(&controllerType, controller)
 		for i := 0; i < controllerType.NumField(); i++ {
 			field := controllerType.Field(i)
@@ -25,7 +26,7 @@ func scanEndPoint(routeContext *RouteContext, prefix string) {
 			}
 
 			// get the method body and convert it to a request delegate
-			methodValue := reflect.ValueOf(*controller).Elem().Field(i)
+			methodValue := reflect.ValueOf(controller).Elem().Field(i)
 			requestHandler := convertControllerMethodToRequestDelegate(methodValue, paramList, method)
 
 			// init end point
@@ -36,7 +37,7 @@ func scanEndPoint(routeContext *RouteContext, prefix string) {
 			}
 
 			// and it to tree
-			routeContext.endPointTrie.AddEndPoint(endpoint)
+			endPointTrie.AddEndPoint(endpoint)
 		}
 	}
 }

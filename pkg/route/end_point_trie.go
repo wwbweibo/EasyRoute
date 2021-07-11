@@ -25,7 +25,7 @@ type EndPointTrieNode struct {
 	endPoint       *EndPoint
 	next           []*EndPointTrieNode
 	section        string
-	defaultHandler delegates.RequestDelegate
+	DefaultHandler delegates.RequestDelegate
 }
 
 // create a new instance of EndPointTrie
@@ -35,7 +35,7 @@ func NewEndPointTrie() *EndPointTrie {
 		endPoint: nil,
 		next:     make([]*EndPointTrieNode, 0),
 		section:  "/",
-		defaultHandler: func(ctx *http.HttpContext) {
+		DefaultHandler: func(ctx *http.HttpContext) {
 			ctx.Response.WriteHeader(http2.StatusNotFound)
 			ctx.Response.Write([]byte("404 Not Found"))
 		},
@@ -113,7 +113,7 @@ func (n *EndPointTrieNode) Search(sections []string) (*EndPointTrieNode, bool) {
 			targetNode, isMatched = next.Search(sections[1:])
 		}
 		if targetNode == nil {
-			if n.defaultHandler != nil {
+			if n.DefaultHandler != nil {
 				targetNode = n
 			} else {
 				targetNode = nil

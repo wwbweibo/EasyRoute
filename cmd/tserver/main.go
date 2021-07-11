@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, _ := context.WithCancel(context.Background())
 	config := pkg.Config{
 		HttpConfig: pkg.HttpConfig{
 			Prefix: "/",
@@ -18,14 +18,6 @@ func main() {
 	}
 	server, _ := pkg.NewServer(ctx, config)
 	server.AddController(NewHomeController())
-	go func() {
-		cancel()
-		fmt.Println("aaaaa")
-	}()
-	go func() {
-		<-ctx.Done()
-		fmt.Println("bbbbb")
-	}()
 	err := server.Serve()
 	fmt.Println(err.Error())
 }

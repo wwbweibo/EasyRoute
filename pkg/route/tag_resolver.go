@@ -9,9 +9,10 @@ import (
 // this file contains the method to resolve information from tag
 
 // ResolveControllerName get controller name from StructTag or instance
-func ResolveControllerName(controllerType *reflect.Type, controller *controllers.Controller) string {
+func ResolveControllerName(controllerType *reflect.Type, controller controllers.Controller) string {
+	controllerValue := reflect.ValueOf(controller)
 	//  try to get user defined controller name, it must be controllerName field
-	controllerNameValue := reflect.ValueOf(controller).Elem().Elem().Elem().FieldByName("controllerName")
+	controllerNameValue := controllerValue.Elem().FieldByName("controllerName")
 	controllerName := ""
 	if controllerNameValue.IsValid() {
 		controllerName = controllerNameValue.String()
