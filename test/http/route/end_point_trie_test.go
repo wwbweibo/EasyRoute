@@ -1,13 +1,13 @@
 package route_test
 
 import (
-	"github.com/wwbweibo/EasyRoute/pkg/route"
+	route2 "github.com/wwbweibo/EasyRoute/route"
 	"strings"
 	"testing"
 )
 
 func TestNewEndpointTrie(t *testing.T) {
-	instance := route.NewEndPointTrie()
+	instance := route2.NewEndPointTrie()
 	if instance == nil {
 		t.Failed()
 	}
@@ -23,8 +23,8 @@ func TestNewEndpointTrie(t *testing.T) {
 }
 
 func TestAddNewEndpoint(t *testing.T) {
-	root := route.NewEndPointTrie().GetRoot()
-	endpoint := route.EndPoint{
+	root := route2.NewEndPointTrie().GetRoot()
+	endpoint := route2.EndPoint{
 		Template: "/Home",
 	}
 	root.Insert(strings.Split(endpoint.Template, "/")[1:], &endpoint)
@@ -36,7 +36,7 @@ func TestAddNewEndpoint(t *testing.T) {
 		t.Fail()
 	}
 
-	endpoint2 := route.EndPoint{
+	endpoint2 := route2.EndPoint{
 		Template: "/User",
 	}
 	root.Insert(strings.Split(endpoint2.Template, "/")[1:], &endpoint2)
@@ -48,7 +48,7 @@ func TestAddNewEndpoint(t *testing.T) {
 		t.Fail()
 	}
 
-	endpoint3 := route.EndPoint{
+	endpoint3 := route2.EndPoint{
 		Template: "/Home/Index",
 	}
 	root.Insert(strings.Split(endpoint3.Template, "/")[1:], &endpoint3)
@@ -63,8 +63,8 @@ func TestAddNewEndpoint(t *testing.T) {
 }
 
 func TestAddEndPointTest(t *testing.T) {
-	tree := route.NewEndPointTrie()
-	endPoint := route.EndPoint{Template: "/Home/Index"}
+	tree := route2.NewEndPointTrie()
+	endPoint := route2.EndPoint{Template: "/Home/Index"}
 	tree.AddEndPoint(&endPoint)
 	e, _, err := tree.GetMatchedRoute("/Home/Index")
 	if err != nil {

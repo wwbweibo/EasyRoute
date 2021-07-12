@@ -1,4 +1,4 @@
-package pkg
+package EasyRoute
 
 type Config struct {
 	HttpConfig HttpConfig

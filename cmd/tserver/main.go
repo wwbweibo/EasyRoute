@@ -3,23 +3,24 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/wwbweibo/EasyRoute"
 	"github.com/wwbweibo/EasyRoute/logger"
-	"github.com/wwbweibo/EasyRoute/pkg"
+	"github.com/wwbweibo/EasyRoute/logger/adapter"
 	"reflect"
 )
 
 func main() {
+	logger.WithLogger(adapter.LogrusAdapter{})
 	ctx, _ := context.WithCancel(context.Background())
-	config := pkg.Config{
-		HttpConfig: pkg.HttpConfig{
+	config := EasyRoute.Config{
+		HttpConfig: EasyRoute.HttpConfig{
 			Prefix: "/",
 			Host:   "0.0.0.0",
 			Port:   "8080",
 		},
 	}
-	server, _ := pkg.NewServer(ctx, config)
+	server, _ := EasyRoute.NewServer(ctx, config)
 	server.AddController(NewHomeController())
-	logger.Info("start server")
 	err := server.Serve()
 	fmt.Println(err.Error())
 }

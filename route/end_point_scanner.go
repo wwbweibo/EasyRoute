@@ -1,15 +1,17 @@
 package route
 
 import (
-	"github.com/wwbweibo/EasyRoute/pkg/controllers"
+	controllers2 "github.com/wwbweibo/EasyRoute/controllers"
+	"github.com/wwbweibo/EasyRoute/logger"
 	"reflect"
 	"strings"
 )
 
 // ScanEndPoint will scan all registered controllers, and Convert each method to a request delegate
-func ScanEndPoint(endPointTrie *EndPointTrie, controllers []controllers.Controller, prefix string) {
+func ScanEndPoint(endPointTrie *EndPointTrie, controllers []controllers2.Controller, prefix string) {
 	for _, controller := range controllers {
 		controllerType := controller.GetControllerType()
+		logger.Info("[route] - [ScanEndPoint] scan end point on controller " + controllerType.String())
 		controllerName := ResolveControllerName(&controllerType, controller)
 		for i := 0; i < controllerType.NumField(); i++ {
 			field := controllerType.Field(i)
@@ -24,6 +26,7 @@ func ScanEndPoint(endPointTrie *EndPointTrie, controllers []controllers.Controll
 			if prefix != "" && prefix != "/" {
 				route = prefix + route
 			}
+			logger.Info("[route] - [ScanEndPoint] find route " + route)
 
 			// get the method body and convert it to a request delegate
 			methodValue := reflect.ValueOf(controller).Elem().Field(i)

@@ -1,11 +1,11 @@
 package delegates
 
 import (
-	http2 "github.com/wwbweibo/EasyRoute/pkg/http"
+	http3 "github.com/wwbweibo/EasyRoute/http"
 	"net/http"
 )
 
-var NotFoundDelegate = func(ctx *http2.HttpContext) {
+var NotFoundDelegate = func(ctx *http3.HttpContext) {
 	ctx.Response.WriteHeader(http.StatusNotFound)
 	ctx.Response.Write([]byte("404 Not Found"))
 }

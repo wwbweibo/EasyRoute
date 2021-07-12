@@ -1,7 +1,7 @@
 package delegates
 
 import (
-	http2 "github.com/wwbweibo/EasyRoute/pkg/http"
+	http3 "github.com/wwbweibo/EasyRoute/http"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -25,7 +25,7 @@ func GetDefaultDelegate(contentRoot string) RequestDelegate {
 		"/default.html",
 		"/default.htm",
 	}
-	return func(ctx *http2.HttpContext) {
+	return func(ctx *http3.HttpContext) {
 		for _, fileName := range defaultFileList {
 			fileData, err := ioutil.ReadFile(wwwroot + fileName)
 			if err != nil {

@@ -2,8 +2,8 @@ package route
 
 import (
 	"errors"
-	"github.com/wwbweibo/EasyRoute/pkg/delegates"
-	"github.com/wwbweibo/EasyRoute/pkg/http"
+	delegates2 "github.com/wwbweibo/EasyRoute/delegates"
+	http3 "github.com/wwbweibo/EasyRoute/http"
 	http2 "net/http"
 	"strings"
 )
@@ -25,7 +25,7 @@ type EndPointTrieNode struct {
 	endPoint       *EndPoint
 	next           []*EndPointTrieNode
 	section        string
-	DefaultHandler delegates.RequestDelegate
+	DefaultHandler delegates2.RequestDelegate
 }
 
 // create a new instance of EndPointTrie
@@ -35,7 +35,7 @@ func NewEndPointTrie() *EndPointTrie {
 		endPoint: nil,
 		next:     make([]*EndPointTrieNode, 0),
 		section:  "/",
-		DefaultHandler: func(ctx *http.HttpContext) {
+		DefaultHandler: func(ctx *http3.HttpContext) {
 			ctx.Response.WriteHeader(http2.StatusNotFound)
 			ctx.Response.Write([]byte("404 Not Found"))
 		},

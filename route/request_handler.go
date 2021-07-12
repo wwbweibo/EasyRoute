@@ -2,18 +2,19 @@ package route
 
 import (
 	cctx "context"
-	"github.com/wwbweibo/EasyRoute/pkg/delegates"
-	http2 "github.com/wwbweibo/EasyRoute/pkg/http"
+	delegates2 "github.com/wwbweibo/EasyRoute/delegates"
+	http3 "github.com/wwbweibo/EasyRoute/http"
+	"github.com/wwbweibo/EasyRoute/logger"
 	"net/http"
 	"strings"
 )
 
 type HttpRequestHandler struct {
-	RequestDelegate delegates.RequestDelegate
+	RequestDelegate delegates2.RequestDelegate
 }
 
 func (handler *HttpRequestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	ctx := http2.HttpContext{
+	ctx := http3.HttpContext{
 		Request:  request,
 		Response: writer,
 		Ctx:      cctx.Background(),
@@ -24,28 +25,32 @@ func (handler *HttpRequestHandler) ServeHTTP(writer http.ResponseWriter, request
 // http请发分发
 
 type requestHandler struct {
-	delegate delegates.RequestDelegate
+	delegate delegates2.RequestDelegate
 }
 
 func newRequestHandler(trie *EndPointTrie) requestHandler {
 	return requestHandler{
-		delegate: func(ctx *http2.HttpContext) {
+		delegate: func(ctx *http3.HttpContext) {
 			request := ctx.Request
 			path := strings.ToLower(request.URL.Path)
+			logger.Info("[RequestHandler] request for path " + path)
 			targetNode, isMatched, err := trie.GetMatchedRoute(path)
 
 			if isMatched {
 				endpoint := targetNode.endPoint
 				if err != nil {
+					logger.Error("[RequestHandler] error while searching route", err)
 					ctx.Response.WriteHeader(http.StatusInternalServerError)
 					ctx.Response.Write([]byte(err.Error()))
 				} else if endpoint == nil || endpoint.handler == nil {
+					logger.Info("[RequestHandler] route matched but no route handler find for path " + path)
 					ctx.Response.WriteHeader(http.StatusNotFound)
 					ctx.Response.Write([]byte("404 Not Found"))
 				} else {
 					endpoint.handler(ctx)
 				}
 			} else {
+				logger.Info("[RequestHandler] no route match for " + path + " execute default handler")
 				targetNode.DefaultHandler(ctx)
 			}
 		},

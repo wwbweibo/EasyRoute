@@ -1,7 +1,7 @@
 package route
 
 import (
-	"github.com/wwbweibo/EasyRoute/pkg/controllers"
+	controllers2 "github.com/wwbweibo/EasyRoute/controllers"
 	"reflect"
 	"strings"
 )
@@ -9,7 +9,7 @@ import (
 // this file contains the method to resolve information from tag
 
 // ResolveControllerName get controller name from StructTag or instance
-func ResolveControllerName(controllerType *reflect.Type, controller controllers.Controller) string {
+func ResolveControllerName(controllerType *reflect.Type, controller controllers2.Controller) string {
 	controllerValue := reflect.ValueOf(controller)
 	//  try to get user defined controller name, it must be controllerName field
 	controllerNameValue := controllerValue.Elem().FieldByName("controllerName")
