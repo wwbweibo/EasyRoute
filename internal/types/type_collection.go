@@ -65,8 +65,7 @@ func (receiver *TypeCollect) TypeOf(name string) (*reflect.Type, error) {
 func (receiver *TypeCollect) InstanceOf(name string) (reflect.Value, error) {
 	if t, ok := receiver.types[name]; ok {
 		createdInstance := reflect.New(*t)
-		a := createdInstance.Elem()
-		return a, nil
+		return createdInstance, nil
 		// return createdInstance.Elem().Interface(), nil
 	} else {
 		return reflect.Value{}, errors.New("Could not find type: " + name + ", Please sure you have registered first")

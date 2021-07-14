@@ -3,6 +3,7 @@ package route
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/wwbweibo/EasyRoute/logger"
 	"net/http"
 	"reflect"
 	"strings"
@@ -74,9 +75,10 @@ func deserializeJsonObject(typeName string, jsonData []byte) reflect.Value {
 	if err != nil {
 		panic("error to handle request")
 	}
-	err = json.Unmarshal(jsonData, &instance)
+	err = json.Unmarshal(jsonData, instance.Interface())
 	if err != nil {
+		logger.Error("error to unmarshal data", err)
 		panic("error to handle request, data error")
 	}
-	return instance
+	return instance.Elem()
 }

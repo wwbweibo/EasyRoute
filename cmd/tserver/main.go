@@ -20,6 +20,7 @@ func main() {
 		},
 	}
 	server, _ := EasyRoute.NewServer(ctx, config)
+	server.RegisterType(Person{})
 	server.AddController(NewHomeController())
 	err := server.Serve()
 	fmt.Println(err.Error())

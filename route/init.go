@@ -1,7 +1,11 @@
 package route
 
 import (
-	"github.com/wwbweibo/EasyRoute/types"
+	types2 "github.com/wwbweibo/EasyRoute/internal/types"
 )
 
-var typeCollectionInstance = types.NewTypeCollect()
+var typeCollectionInstance = types2.NewTypeCollect()
+
+func InjectTypes(collect *types2.TypeCollect) {
+	typeCollectionInstance = collect
+}
