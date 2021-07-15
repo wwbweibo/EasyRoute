@@ -38,7 +38,7 @@ func NewServer(ctx context.Context, config Config) (*Server, error) {
 
 // AddController will register the given handle to server
 func (server *Server) AddController(controller controllers2.Controller) {
-	logger.Info("[server] - [AddController] add controller " + controller.GetControllerType().String())
+	logger.Info("[server] - [AddController] add controller %s ", controller.GetControllerType().String())
 	server.controllers = append(server.controllers, controller)
 }
 
@@ -76,7 +76,7 @@ func (server *Server) Serve() error {
 			_ = httpServer.Shutdown(ctx)
 			logger.Info("[server] - [Serve] server shutdown due to outer context exit")
 		}()
-		logger.Info("[server] - [Serve] listen http on address " + httpServer.Addr)
+		logger.Info("[server] - [Serve] listen http on address %s ", httpServer.Addr)
 		return httpServer.ListenAndServe()
 	})
 	group.Go(func() error {

@@ -2,20 +2,20 @@ package logger
 
 var log = newLog()
 
-func Error(message string, err ...error) {
-	log.logger.Error(message, err...)
+func Error(format string, param ...interface{}) {
+	log.logger.Error(format, param)
 }
 
-func Warning(message string, err ...error) {
-	log.logger.Warning(message, err...)
+func Warning(format string, param ...interface{}) {
+	log.logger.Warning(format, param)
 }
 
-func Info(message string, err ...error) {
-	log.logger.Info(message, err...)
+func Info(format string, param ...interface{}) {
+	log.logger.Info(format, param)
 }
 
-func Debug(message string, err ...error) {
-	log.logger.Debug(message, err...)
+func Debug(format string, param ...interface{}) {
+	log.logger.Debug(format, param)
 }
 
 func WithLogger(logger Logger) {

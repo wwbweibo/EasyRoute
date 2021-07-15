@@ -5,18 +5,22 @@ import "github.com/sirupsen/logrus"
 type LogrusAdapter struct {
 }
 
-func (l LogrusAdapter) Error(message string, err ...error) {
-	logrus.Error(message, err)
+func (l LogrusAdapter) Fatal(format string, param ...interface{}) {
+	logrus.Fatalf(format, param...)
 }
 
-func (l LogrusAdapter) Warning(message string, err ...error) {
-	logrus.Warning(message, err)
+func (l LogrusAdapter) Error(format string, param ...interface{}) {
+	logrus.Errorf(format, param...)
 }
 
-func (l LogrusAdapter) Info(message string, err ...error) {
-	logrus.Info(message, err)
+func (l LogrusAdapter) Warning(format string, param ...interface{}) {
+	logrus.Warningf(format, param...)
 }
 
-func (l LogrusAdapter) Debug(message string, err ...error) {
-	logrus.Debug(message, err)
+func (l LogrusAdapter) Info(format string, param ...interface{}) {
+	logrus.Infof(format, param...)
+}
+
+func (l LogrusAdapter) Debug(format string, param ...interface{}) {
+	logrus.Debugf(format, param...)
 }

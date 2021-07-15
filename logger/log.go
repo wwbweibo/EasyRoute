@@ -10,22 +10,25 @@ func newLog() *logger {
 	}
 }
 
-func (log *logger) Error(message string, err ...error) {
-	log.logger.Error(message, err...)
+func (log *logger) Fatal(format string, param ...interface{}) {
+	log.logger.Fatal(format, param)
 }
 
-func (log *logger) Warning(message string, err ...error) {
-	log.logger.Warning(message, err...)
+func (log *logger) Error(format string, param ...interface{}) {
+	log.logger.Error(format, param)
 }
 
-func (log *logger) Info(message string, err ...error) {
-	log.logger.Info(message, err...)
+func (log *logger) Warning(format string, param ...interface{}) {
+	log.logger.Warning(format, param)
 }
 
-func (log *logger) Debug(message string, err ...error) {
-	log.logger.Debug(message, err...)
+func (log *logger) Info(format string, param ...interface{}) {
+	log.logger.Info(format, param)
 }
 
+func (log *logger) Debug(format string, param ...interface{}) {
+	log.logger.Debug(format, param)
+}
 func (log *logger) WithLogger(logger Logger) {
 	log.logger = logger
 }

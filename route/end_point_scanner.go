@@ -11,7 +11,7 @@ import (
 func ScanEndPoint(endPointTrie *EndPointTrie, controllers []controllers2.Controller, prefix string) {
 	for _, controller := range controllers {
 		controllerType := controller.GetControllerType()
-		logger.Info("[route] - [ScanEndPoint] scan end point on controller " + controllerType.String())
+		logger.Info("[route] - [ScanEndPoint] scan end point on controller %s", controllerType.String())
 		controllerName := ResolveControllerName(&controllerType, controller)
 		for i := 0; i < controllerType.NumField(); i++ {
 			field := controllerType.Field(i)
@@ -26,7 +26,7 @@ func ScanEndPoint(endPointTrie *EndPointTrie, controllers []controllers2.Control
 			if prefix != "" && prefix != "/" {
 				route = prefix + route
 			}
-			logger.Info("[route] - [ScanEndPoint] find route " + route)
+			logger.Info("[route] - [ScanEndPoint] find route %s", route)
 
 			// get the method body and convert it to a request delegate
 			methodValue := reflect.ValueOf(controller).Elem().Field(i)

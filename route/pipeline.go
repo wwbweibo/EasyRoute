@@ -22,7 +22,7 @@ func (receiver *Pipeline) AddMiddleware(middleware delegates2.Middleware) {
 }
 
 func (receiver *Pipeline) Build(trie *EndPointTrie) delegates2.RequestDelegate {
-	logger.Info("[route] - [Pipeline] - [Build] building request pipeline")
+	logger.Info("[route] - [Pipeline] - [Build] building request pipeline", nil)
 	var app delegates2.RequestDelegate
 	app = newRequestHandler(trie).delegate
 	for i := len(receiver.handlerList) - 1; i >= 0; i-- {
