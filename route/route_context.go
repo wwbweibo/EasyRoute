@@ -26,7 +26,7 @@ package route
 //	ctx            cctx.Context
 //}
 //
-//type paramMap struct {
+//type ParamMap struct {
 //	paramName string
 //	paramType string
 //	source    string

@@ -12,12 +12,12 @@ func ScanEndPoint(endPointTrie *EndPointTrie, controllers []controllers2.Control
 	for _, controller := range controllers {
 		controllerType := controller.GetControllerType()
 		logger.Info("[route] - [ScanEndPoint] scan end point on controller %s", controllerType.String())
-		controllerName := ResolveControllerName(&controllerType, controller)
+		controllerName := ResolveControllerName(controller)
 		for i := 0; i < controllerType.NumField(); i++ {
 			field := controllerType.Field(i)
-			route := ResolveMethodName(&field.Tag, &field)
-			method := ResolveMethod(&field.Tag)
-			paramList := ResolveParamName(&field.Tag, &field)
+			route := ResolveMethodName(field)
+			method := ResolveMethod(field.Tag)
+			paramList := ResolveParamName(field)
 
 			// if the route is not start with "/", then combine the controllerName and route
 			if !strings.HasPrefix(route, "/") {

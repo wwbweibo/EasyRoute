@@ -9,7 +9,8 @@ import (
 // this file contains the method to resolve information from tag
 
 // ResolveControllerName get controller name from StructTag or instance
-func ResolveControllerName(controllerType *reflect.Type, controller controllers2.Controller) string {
+func ResolveControllerName(controller controllers2.Controller) string {
+	controllerType := controller.GetControllerType()
 	controllerValue := reflect.ValueOf(controller)
 	//  try to get user defined controller name, it must be controllerName field
 	controllerNameValue := controllerValue.Elem().FieldByName("controllerName")
@@ -20,15 +21,16 @@ func ResolveControllerName(controllerType *reflect.Type, controller controllers2
 
 	// if the user defined controller name is empty, then the controller name should be ControllerTypeName
 	if controllerName == "" {
-		patharr := strings.Split((*controllerType).String(), ".")
+		patharr := strings.Split((controllerType).String(), ".")
 		controllerName = strings.Replace(patharr[len(patharr)-1], "Controller", "", 1)
 	}
 	return strings.ToLower(controllerName)
 }
 
 // ResolveMethodName get the method name from tag
-func ResolveMethodName(tag *reflect.StructTag, field *reflect.StructField) string {
-	definedRoute := (*tag).Get("route")
+func ResolveMethodName(field reflect.StructField) string {
+	tag := field.Tag
+	definedRoute := tag.Get("route")
 	// the user defined route is empty, field name as default
 	if definedRoute == "" {
 		definedRoute = field.Name
@@ -37,8 +39,8 @@ func ResolveMethodName(tag *reflect.StructTag, field *reflect.StructField) strin
 }
 
 // ResolveMethod get the request method from tag
-func ResolveMethod(tag *reflect.StructTag) string {
-	method := (*tag).Get("method")
+func ResolveMethod(tag reflect.StructTag) string {
+	method := tag.Get("method")
 	// the user defined route is empty, field name as default
 	if method == "" {
 		method = "GET"
@@ -47,12 +49,13 @@ func ResolveMethod(tag *reflect.StructTag) string {
 }
 
 // ResolveParamName get the typeName and method name map
-func ResolveParamName(tag *reflect.StructTag, field *reflect.StructField) []*paramMap {
+func ResolveParamName(field reflect.StructField) []*ParamMap {
+	tag := field.Tag
 	paramNameString := tag.Get("param")
 	if paramNameString == "" {
 		return nil
 	}
-	paramList := make([]*paramMap, 0)
+	paramList := make([]*ParamMap, 0)
 	paramNameList := strings.Split(paramNameString, ",")
 	// get method signature
 	methodSignature := field.Type.String()
@@ -66,7 +69,7 @@ func ResolveParamName(tag *reflect.StructTag, field *reflect.StructField) []*par
 
 	for i := 0; i < len(paramNameList); i++ {
 		name := strings.Split(paramNameList[i], ":")
-		m := &paramMap{
+		m := &ParamMap{
 			paramType: paramType[i],
 		}
 
