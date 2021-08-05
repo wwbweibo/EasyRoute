@@ -39,3 +39,8 @@ func ResponseReader(reader io.Reader, result interface{}) {
 	r.Read(data)
 	json.Unmarshal(data, result)
 }
+
+func JsonSerialize(a interface{}) string {
+	v, _ := json.Marshal(a)
+	return string(v)
+}

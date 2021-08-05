@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"reflect"
 	"strings"
 )
 
@@ -54,8 +55,6 @@ func generateFileHead(buf io.Writer, pkg string, imports []string) {
 	fmt.Fprintf(buf, "package %s\n\n", pkg)
 	// will use rpc.Config
 	imports = append(imports, "\"github.com/wwbweibo/EasyRoute/rpc\"")
-	// will use http
-	imports = append(imports, "\"net/http\"")
 	if len(imports) > 0 {
 		fmt.Fprintf(buf, "import (\n")
 		for _, v := range imports {
@@ -74,7 +73,7 @@ func generateConstructor(buf io.Writer, typeName string, fields *ast.FieldList) 
 		if fieldType, ok := (field.Type).(*ast.FuncType); ok {
 			fmt.Fprintf(buf, "\t\t%s: func(", field.Names[0].Name)
 
-			// generate method signature
+			// generate method args
 			if fieldType.Params.NumFields() == 1 {
 				f := fieldType.Params.List[0]
 				fmt.Fprintf(buf, "%s %s", f.Names[0].Name, (f.Type).(*ast.Ident).Name)
@@ -110,9 +109,14 @@ func generateConstructor(buf io.Writer, typeName string, fields *ast.FieldList) 
 			if !ok {
 				method = "Get"
 			}
+			params := []string{}
+			param, ok := tags["param"]
+			if ok {
+				params = strings.Split(param, ",")
+			}
 			fmt.Printf("%s\n", method)
 
-			generateHttpRequest(buf, field.Names[0].Name, method, nil, resultType)
+			generateHttpRequest(buf, field.Names[0].Name, strings.ReplaceAll(method, "\"", ""), params, resultType)
 
 			fmt.Fprintf(buf, "\t\t},\n")
 		}
@@ -122,8 +126,25 @@ func generateConstructor(buf io.Writer, typeName string, fields *ast.FieldList) 
 
 func generateHttpRequest(buf io.Writer, methodName string, method string, args []string, responseType string) {
 	if strings.ToLower(method) == "get" {
-		fmt.Fprintf(buf, "\t\t\tresult := %s{}\n", responseType)
-		fmt.Fprintf(buf, "\t\t\terr := rpc.HttpGet(config, \"%s\", nil, &result)\n", methodName)
+		if isSimpleValueType(responseType) {
+			if isNumberType(responseType) {
+				fmt.Fprintf(buf, "\t\t\tvar result %s = 0\n", responseType)
+			} else if isString(responseType) {
+				fmt.Fprintf(buf, "\t\t\tresult := \"\"\n")
+			}
+		} else {
+			fmt.Fprintf(buf, "\t\t\tresult := %s{}\n", responseType)
+		}
+		if len(args) == 0 {
+			fmt.Fprintf(buf, "\t\t\terr := rpc.HttpGet(config, \"%s\", nil, &result)\n", methodName)
+		} else {
+			fmt.Fprintf(buf, "\t\t\tparams := make(map[string]string)\n")
+			for _, arg := range args {
+				fmt.Fprintf(buf, "\t\t\tparams[%s] = rpc.JsonSerialize(%s)\n", arg, strings.ReplaceAll(arg, "\"", ""))
+			}
+			fmt.Fprintf(buf, "\t\t\terr := rpc.HttpGet(config, \"%s\", params, &result)\n", methodName)
+		}
+
 		fmt.Fprintf(buf, "\t\t\tif err != nil {return result, err}\n")
 		fmt.Fprintf(buf, "\t\t\treturn result, nil\n")
 	}
@@ -170,7 +191,8 @@ func parseTypes(decls []ast.Decl) []*ast.TypeSpec {
 
 func parseFieldTag(field *ast.Field) map[string]string {
 	tagMap := make(map[string]string)
-	tags := strings.Split(field.Tag.Value, " ")
+	tagStr := strings.ReplaceAll(field.Tag.Value, "`", "")
+	tags := strings.Split(tagStr, " ")
 	for _, tag := range tags {
 		v := strings.Split(tag, ":")
 		tagMap[v[0]] = v[1]
@@ -197,3 +219,59 @@ func isNeedGenerate(comments []*ast.CommentGroup) bool {
 
 	return false
 }
+
+func isSimpleValueType(typeName string) bool {
+	return isNumberType(typeName) || isString(typeName) || isArray(typeName)
+}
+
+func isNumberType(typeName string) bool {
+	return typeName == reflect.Int.String() ||
+		typeName == reflect.Int8.String() ||
+		typeName == reflect.Int16.String() ||
+		typeName == reflect.Int32.String() ||
+		typeName == reflect.Int64.String() ||
+		typeName == reflect.Uint.String() ||
+		typeName == reflect.Uint8.String() ||
+		typeName == reflect.Uint16.String() ||
+		typeName == reflect.Uint32.String() ||
+		typeName == reflect.Uint64.String() ||
+		typeName == reflect.Float64.String() ||
+		typeName == reflect.Float32.String()
+}
+
+func isString(typeName string) bool {
+	return typeName == reflect.String.String()
+}
+
+func isArray(typeName string) bool {
+	return typeName[0:2] == "[]"
+}
+
+//
+//Invalid Kind = iota
+//Bool
+//Int
+//Int8
+//Int16
+//Int32
+//Int64
+//Uint
+//Uint8
+//Uint16
+//Uint32
+//Uint64
+//Uintptr
+//Float32
+//Float64
+//Complex64
+//Complex128
+//Array
+//Chan
+//Func
+//Interface
+//Map
+//Ptr
+//Slice
+//String
+//Struct
+//UnsafePointer
