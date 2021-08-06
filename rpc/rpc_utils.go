@@ -33,6 +33,20 @@ func HttpGet(config Config, methodName string, params map[string]string, result 
 	return nil
 }
 
+func HttpPost(config Config, methodName string, params map[string]string, result interface{}) error {
+	url := config.BaseUrl + "/" + methodName
+	param := make(map[string][]string)
+	for k, v := range params {
+		param[k] = []string{v}
+	}
+	response, err := http.PostForm(url, param)
+	if err != nil {
+		return err
+	}
+	ResponseReader(response.Body, result)
+	return nil
+}
+
 func ResponseReader(reader io.Reader, result interface{}) {
 	r := bufio.NewReader(reader)
 	data := make([]byte, r.Size())

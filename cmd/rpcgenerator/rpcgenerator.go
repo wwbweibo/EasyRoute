@@ -88,6 +88,7 @@ func generateConstructor(buf io.Writer, typeName string, fields *ast.FieldList) 
 			fmt.Fprintf(buf, ") ")
 
 			resultType := ""
+
 			// generate method return type
 			fmt.Fprintf(buf, "(")
 			for idx, f := range fieldType.Results.List {
@@ -103,8 +104,8 @@ func generateConstructor(buf io.Writer, typeName string, fields *ast.FieldList) 
 
 			fmt.Fprintf(buf, " {\n")
 
+			// get http end point information from tag
 			tags := parseFieldTag(field)
-
 			method, ok := tags["method"]
 			if !ok {
 				method = "Get"
@@ -114,9 +115,14 @@ func generateConstructor(buf io.Writer, typeName string, fields *ast.FieldList) 
 			if ok {
 				params = strings.Split(param, ",")
 			}
+			methodName, ok := tags["route"]
+			if !ok {
+				methodName = field.Names[0].Name
+			}
 			fmt.Printf("%s\n", method)
 
-			generateHttpRequest(buf, field.Names[0].Name, strings.ReplaceAll(method, "\"", ""), params, resultType)
+			// generate http request information
+			generateHttpRequest(buf, methodName, strings.ReplaceAll(method, "\"", ""), params, resultType)
 
 			fmt.Fprintf(buf, "\t\t},\n")
 		}
@@ -137,6 +143,28 @@ func generateHttpRequest(buf io.Writer, methodName string, method string, args [
 		}
 		if len(args) == 0 {
 			fmt.Fprintf(buf, "\t\t\terr := rpc.HttpGet(config, \"%s\", nil, &result)\n", methodName)
+		} else {
+			fmt.Fprintf(buf, "\t\t\tparams := make(map[string]string)\n")
+			for _, arg := range args {
+				fmt.Fprintf(buf, "\t\t\tparams[%s] = rpc.JsonSerialize(%s)\n", arg, strings.ReplaceAll(arg, "\"", ""))
+			}
+			fmt.Fprintf(buf, "\t\t\terr := rpc.HttpGet(config, \"%s\", params, &result)\n", methodName)
+		}
+
+		fmt.Fprintf(buf, "\t\t\tif err != nil {return result, err}\n")
+		fmt.Fprintf(buf, "\t\t\treturn result, nil\n")
+	} else if strings.ToLower(method) == "post" {
+		if isSimpleValueType(responseType) {
+			if isNumberType(responseType) {
+				fmt.Fprintf(buf, "\t\t\tvar result %s = 0\n", responseType)
+			} else if isString(responseType) {
+				fmt.Fprintf(buf, "\t\t\tresult := \"\"\n")
+			}
+		} else {
+			fmt.Fprintf(buf, "\t\t\tresult := %s{}\n", responseType)
+		}
+		if len(args) == 0 {
+			fmt.Fprintf(buf, "\t\t\terr := rpc.HttpPost(config, \"%s\", nil, &result)\n", methodName)
 		} else {
 			fmt.Fprintf(buf, "\t\t\tparams := make(map[string]string)\n")
 			for _, arg := range args {

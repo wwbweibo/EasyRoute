@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/wwbweibo/EasyRoute"
-	"github.com/wwbweibo/EasyRoute/logger"
-	"github.com/wwbweibo/EasyRoute/logger/adapter"
 	"reflect"
 )
 
 func main() {
-	logger.WithLogger(adapter.LogrusAdapter{})
+	// logger.WithLogger(adapter.LogrusAdapter{})
 	ctx, _ := context.WithCancel(context.Background())
 	config := EasyRoute.Config{
 		HttpConfig: EasyRoute.HttpConfig{
@@ -32,9 +30,10 @@ type Person struct {
 }
 
 type HomeController struct {
-	Index       func() string              `method:"Get"`
-	IndexA      func(a string) string      `method:"Get" param:"a"`
-	IndexPerson func(person Person) Person `method:"get" param:"person"`
+	Index       func() (string, error)              `method:"Get"`
+	IndexA      func(a string) (string, error)      `method:"Get" param:"a"`
+	IndexPerson func(person Person) (Person, error) `method:"get" param:"person"`
+	PostIndex   func() (string, error)              `method:"POST"`
 }
 
 func (self *HomeController) GetControllerType() reflect.Type {
@@ -43,17 +42,20 @@ func (self *HomeController) GetControllerType() reflect.Type {
 
 func NewHomeController() *HomeController {
 	instance := HomeController{
-		Index: func() string {
+		Index: func() (string, error) {
 			fmt.Println("enter index")
-			return "Index"
+			return "Index", nil
 		},
-		IndexA: func(a string) string {
+		IndexA: func(a string) (string, error) {
 			fmt.Println(a)
-			return a
+			return a, nil
 		},
-		IndexPerson: func(person Person) Person {
+		IndexPerson: func(person Person) (Person, error) {
 			fmt.Printf("Name： %s, Age：%f\n", person.Name, person.Age)
-			return person
+			return person, nil
+		},
+		PostIndex: func() (string, error) {
+			return "success", nil
 		},
 	}
 	return &instance

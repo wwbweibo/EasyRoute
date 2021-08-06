@@ -4,6 +4,7 @@ import (
 	controllers2 "github.com/wwbweibo/EasyRoute/controllers"
 	"github.com/wwbweibo/EasyRoute/logger"
 	"reflect"
+	"regexp"
 	"strings"
 )
 
@@ -15,6 +16,7 @@ func ScanEndPoint(endPointTrie *EndPointTrie, controllers []controllers2.Control
 		controllerName := ResolveControllerName(controller)
 		for i := 0; i < controllerType.NumField(); i++ {
 			field := controllerType.Field(i)
+			methodSignatureCheck(field)
 			route := ResolveMethodName(field)
 			method := ResolveMethod(field.Tag)
 			paramList := ResolveParamName(field)
@@ -42,5 +44,16 @@ func ScanEndPoint(endPointTrie *EndPointTrie, controllers []controllers2.Control
 			// and it to tree
 			endPointTrie.AddEndPoint(endpoint)
 		}
+	}
+}
+
+// methodSignatureCheck is used to check the controller field method is legal
+func methodSignatureCheck(field reflect.StructField) {
+	isMatch, err := regexp.MatchString("\\([\\w.]+,[\\s]+error\\)", field.Type.String())
+	if err != nil {
+		logger.Error("[route] - [methodSignatureCheck], error to check method %s", err)
+	}
+	if !isMatch {
+		panic("method signature " + field.Type.String() + " is not permit, method should return an object and an error")
 	}
 }
