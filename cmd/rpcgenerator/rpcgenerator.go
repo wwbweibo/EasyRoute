@@ -6,7 +6,6 @@ import (
 	"go/ast"
 	"go/format"
 	"golang.org/x/tools/go/packages"
-	"io"
 	"io/ioutil"
 	"log"
 	"reflect"
@@ -23,86 +22,93 @@ func main() {
 	pkg := parsePackage([]string{"."}, []string{})
 	for _, syntax := range pkg.Syntax {
 		if isNeedGenerate(syntax.Comments) {
-			imports := []string{}
+			var imports []string
 			if syntax.Imports != nil {
 				for _, v := range syntax.Imports {
 					imports = append(imports, v.Path.Value)
 				}
 			}
 
-			generateFileHead(&buf, pkg.Name, imports)
+			generateFileHead(pkg.Name, imports)
 
 			types := parseTypes(syntax.Decls)
 
 			for _, spec := range types {
-				generateConstructor(&buf, spec.Name.Name, spec.Type.(*ast.StructType).Fields)
+				generateConstructor(spec.Name.Name, spec.Type.(*ast.StructType).Fields)
 			}
 
-			bytes := buf.Bytes()
-			src, err := format.Source(bytes)
+			fileBytes := buf.Bytes()
+			src, err := format.Source(fileBytes)
 			if err != nil {
-				ioutil.WriteFile(syntax.Name.Name+"_gen.go", bytes, 0644)
+				err = ioutil.WriteFile(syntax.Name.Name+"_gen.go", fileBytes, 0644)
+				if err != nil {
+					panic("write content to file error")
+
+				}
 			} else {
-				ioutil.WriteFile(syntax.Name.Name+"_gen.go", src, 0644)
+				err = ioutil.WriteFile(syntax.Name.Name+"_gen.go", src, 0644)
+				if err != nil {
+					panic("write content to file error")
+				}
 			}
 		}
 	}
 }
 
 // generateFileHead will generate top file comment, package and imports
-func generateFileHead(buf io.Writer, pkg string, imports []string) {
-	fmt.Fprintf(buf, "// code generate by codegenerator, DO NOT EDIT;\n\n")
-	fmt.Fprintf(buf, "package %s\n\n", pkg)
+func generateFileHead(pkg string, imports []string) {
+	bufferPrint("// code generate by codegenerator, DO NOT EDIT;\n\n")
+	bufferPrint("package %s\n\n", pkg)
 	// will use rpc.Config
 	imports = append(imports, "\"github.com/wwbweibo/EasyRoute/rpc\"")
 	if len(imports) > 0 {
-		fmt.Fprintf(buf, "import (\n")
+		bufferPrint("import (\n")
 		for _, v := range imports {
-			fmt.Fprintf(buf, "\t%s\n", v)
+			bufferPrint("\t%s\n", v)
 		}
-		fmt.Fprintf(buf, ")\n\n")
+		bufferPrint(")\n\n")
 	}
 }
 
 // generateConstructor will generate constructor for every type
-func generateConstructor(buf io.Writer, typeName string, fields *ast.FieldList) {
-	fmt.Fprintf(buf, "func New%s(config rpc.Config) *%s {\n", typeName, typeName)
-	fmt.Fprintf(buf, "\treturn &%s{\n", typeName)
+func generateConstructor(typeName string, fields *ast.FieldList) {
+	bufferPrint("func New%s(config rpc.Config) *%s {\n", typeName, typeName)
+	bufferPrint("\treturn &%s{\n", typeName)
 
 	for _, field := range fields.List {
 		if fieldType, ok := (field.Type).(*ast.FuncType); ok {
-			fmt.Fprintf(buf, "\t\t%s: func(", field.Names[0].Name)
+			bufferPrint("\t\t%s: func(", field.Names[0].Name)
 
 			// generate method args
 			if fieldType.Params.NumFields() == 1 {
 				f := fieldType.Params.List[0]
-				fmt.Fprintf(buf, "%s %s", f.Names[0].Name, (f.Type).(*ast.Ident).Name)
+				bufferPrint("%s %s", f.Names[0].Name, (f.Type).(*ast.Ident).Name)
 			} else {
 				for idx, f := range fieldType.Params.List {
-					fmt.Fprintf(buf, "%s %s", f.Names[0].Name, (f.Type).(*ast.Ident).Name)
+					bufferPrint("%s %s", f.Names[0].Name, (f.Type).(*ast.Ident).Name)
 					if idx != fieldType.Params.NumFields()-1 {
-						fmt.Fprintf(buf, ", ")
+						bufferPrint(", ")
 					}
 				}
 			}
-			fmt.Fprintf(buf, ") ")
+			bufferPrint(") ")
 
 			resultType := ""
 
 			// generate method return type
-			fmt.Fprintf(buf, "(")
+			bufferPrint("(")
 			for idx, f := range fieldType.Results.List {
-				fmt.Fprintf(buf, "%s", (f.Type).(*ast.Ident).Name)
+				bufferPrint("%s", (f.Type).(*ast.Ident).Name)
 				if idx == 0 {
 					resultType = (f.Type).(*ast.Ident).Name
 				}
 				if idx != fieldType.Results.NumFields()-1 {
-					fmt.Fprintf(buf, ", ")
+					bufferPrint(", ")
 				}
 			}
-			fmt.Fprintf(buf, ")")
+			bufferPrint(")")
 
-			fmt.Fprintf(buf, " {\n")
+			bufferPrint(" {\n")
 
 			// get http end point information from tag
 			tags := parseFieldTag(field)
@@ -110,7 +116,7 @@ func generateConstructor(buf io.Writer, typeName string, fields *ast.FieldList) 
 			if !ok {
 				method = "Get"
 			}
-			params := []string{}
+			var params []string
 			param, ok := tags["param"]
 			if ok {
 				params = strings.Split(param, ",")
@@ -119,62 +125,61 @@ func generateConstructor(buf io.Writer, typeName string, fields *ast.FieldList) 
 			if !ok {
 				methodName = field.Names[0].Name
 			}
-			fmt.Printf("%s\n", method)
-
 			// generate http request information
-			generateHttpRequest(buf, methodName, strings.ReplaceAll(method, "\"", ""), params, resultType)
+			generateHttpRequest(typeName, methodName, strings.ReplaceAll(method, "\"", ""), params, resultType)
 
-			fmt.Fprintf(buf, "\t\t},\n")
+			bufferPrint("\t\t},\n")
 		}
 	}
-	fmt.Fprintf(buf, "\t}\n}\n")
+	bufferPrint("\t}\n}\n")
 }
 
-func generateHttpRequest(buf io.Writer, methodName string, method string, args []string, responseType string) {
+func generateHttpRequest(controllerName string, methodName string, method string, args []string, responseType string) {
+	controllerName = strings.ReplaceAll(strings.ToLower(controllerName), "controller", "")
 	if strings.ToLower(method) == "get" {
 		if isSimpleValueType(responseType) {
 			if isNumberType(responseType) {
-				fmt.Fprintf(buf, "\t\t\tvar result %s = 0\n", responseType)
+				bufferPrint("\t\t\tvar result %s = 0\n", responseType)
 			} else if isString(responseType) {
-				fmt.Fprintf(buf, "\t\t\tresult := \"\"\n")
+				bufferPrint("\t\t\tresult := \"\"\n")
 			}
 		} else {
-			fmt.Fprintf(buf, "\t\t\tresult := %s{}\n", responseType)
+			bufferPrint("\t\t\tresult := %s{}\n", responseType)
 		}
 		if len(args) == 0 {
-			fmt.Fprintf(buf, "\t\t\terr := rpc.HttpGet(config, \"%s\", nil, &result)\n", methodName)
+			bufferPrint("\t\t\terr := rpc.HttpGet(config, \"%s\",\"%s\", nil, &result)\n", controllerName, methodName)
 		} else {
-			fmt.Fprintf(buf, "\t\t\tparams := make(map[string]string)\n")
+			bufferPrint("\t\t\tparams := make(map[string]string)\n")
 			for _, arg := range args {
-				fmt.Fprintf(buf, "\t\t\tparams[%s] = rpc.JsonSerialize(%s)\n", arg, strings.ReplaceAll(arg, "\"", ""))
+				bufferPrint("\t\t\tparams[%s] = rpc.JsonSerialize(%s)\n", arg, strings.ReplaceAll(arg, "\"", ""))
 			}
-			fmt.Fprintf(buf, "\t\t\terr := rpc.HttpGet(config, \"%s\", params, &result)\n", methodName)
+			bufferPrint("\t\t\terr := rpc.HttpGet(config, \"%s\",\"%s\", params, &result)\n", controllerName, methodName)
 		}
 
-		fmt.Fprintf(buf, "\t\t\tif err != nil {return result, err}\n")
-		fmt.Fprintf(buf, "\t\t\treturn result, nil\n")
+		bufferPrint("\t\t\tif err != nil {return result, err}\n")
+		bufferPrint("\t\t\treturn result, nil\n")
 	} else if strings.ToLower(method) == "post" {
 		if isSimpleValueType(responseType) {
 			if isNumberType(responseType) {
-				fmt.Fprintf(buf, "\t\t\tvar result %s = 0\n", responseType)
+				bufferPrint("\t\t\tvar result %s = 0\n", responseType)
 			} else if isString(responseType) {
-				fmt.Fprintf(buf, "\t\t\tresult := \"\"\n")
+				bufferPrint("\t\t\tresult := \"\"\n")
 			}
 		} else {
-			fmt.Fprintf(buf, "\t\t\tresult := %s{}\n", responseType)
+			bufferPrint("\t\t\tresult := %s{}\n", responseType)
 		}
 		if len(args) == 0 {
-			fmt.Fprintf(buf, "\t\t\terr := rpc.HttpPost(config, \"%s\", nil, &result)\n", methodName)
+			bufferPrint("\t\t\terr := rpc.HttpPost(config, \"%s\" , \"%s\", nil, &result)\n", controllerName, methodName)
 		} else {
-			fmt.Fprintf(buf, "\t\t\tparams := make(map[string]string)\n")
+			bufferPrint("\t\t\tparams := make(map[string]string)\n")
 			for _, arg := range args {
-				fmt.Fprintf(buf, "\t\t\tparams[%s] = rpc.JsonSerialize(%s)\n", arg, strings.ReplaceAll(arg, "\"", ""))
+				bufferPrint("\t\t\tparams[%s] = rpc.JsonSerialize(%s)\n", arg, strings.ReplaceAll(arg, "\"", ""))
 			}
-			fmt.Fprintf(buf, "\t\t\terr := rpc.HttpGet(config, \"%s\", params, &result)\n", methodName)
+			bufferPrint("\t\t\terr := rpc.HttpGet(config, \"%s\", \"%s\", params, &result)\n", controllerName, methodName)
 		}
 
-		fmt.Fprintf(buf, "\t\t\tif err != nil {return result, err}\n")
-		fmt.Fprintf(buf, "\t\t\treturn result, nil\n")
+		bufferPrint("\t\t\tif err != nil {return result, err}\n")
+		bufferPrint("\t\t\treturn result, nil\n")
 	}
 }
 
@@ -198,7 +203,7 @@ func parsePackage(patterns, tags []string) *packages.Package {
 }
 
 func parseTypes(decls []ast.Decl) []*ast.TypeSpec {
-	types := []*ast.TypeSpec{}
+	var types []*ast.TypeSpec
 	for _, decl := range decls {
 		d, ok := decl.(*ast.GenDecl)
 		if !ok {
@@ -275,31 +280,6 @@ func isArray(typeName string) bool {
 	return typeName[0:2] == "[]"
 }
 
-//
-//Invalid Kind = iota
-//Bool
-//Int
-//Int8
-//Int16
-//Int32
-//Int64
-//Uint
-//Uint8
-//Uint16
-//Uint32
-//Uint64
-//Uintptr
-//Float32
-//Float64
-//Complex64
-//Complex128
-//Array
-//Chan
-//Func
-//Interface
-//Map
-//Ptr
-//Slice
-//String
-//Struct
-//UnsafePointer
+func bufferPrint(format string, args ...interface{}) {
+	_, _ = fmt.Fprintf(&buf, format, args...)
+}

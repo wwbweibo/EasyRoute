@@ -17,24 +17,24 @@ type Config struct {
 	BaseUrl string `yaml:"base-url"`
 }
 
-func HttpGet(config Config, methodName string, params map[string]string, result interface{}) error {
-	url := config.BaseUrl + "/" + methodName
+func HttpGet(config Config, controllerName, methodName string, params map[string]string, result interface{}) error {
+	url := fmt.Sprintf("%s/%s/%s", config.BaseUrl, controllerName, methodName)
 	if params != nil || len(params) > 0 {
 		url += "?"
 		for k, v := range params {
 			url += fmt.Sprintf("%s=%s&", k, v)
 		}
+		url = url[:len(url)-1]
 	}
-	response, err := http.Get(url[:len(url)-1])
+	response, err := http.Get(url)
 	if err != nil {
 		return err
 	}
-	ResponseReader(response.Body, result)
-	return nil
+	return ResponseReader(response.Body, result)
 }
 
-func HttpPost(config Config, methodName string, params map[string]string, result interface{}) error {
-	url := config.BaseUrl + "/" + methodName
+func HttpPost(config Config, controllerName, methodName string, params map[string]string, result interface{}) error {
+	url := fmt.Sprintf("%s/%s/%s", config.BaseUrl, controllerName, methodName)
 	param := make(map[string][]string)
 	for k, v := range params {
 		param[k] = []string{v}
@@ -43,15 +43,18 @@ func HttpPost(config Config, methodName string, params map[string]string, result
 	if err != nil {
 		return err
 	}
-	ResponseReader(response.Body, result)
-	return nil
+	return ResponseReader(response.Body, result)
 }
 
-func ResponseReader(reader io.Reader, result interface{}) {
+func ResponseReader(reader io.Reader, result interface{}) error {
 	r := bufio.NewReader(reader)
 	data := make([]byte, r.Size())
-	r.Read(data)
-	json.Unmarshal(data, result)
+	n, err := r.Read(data)
+	if err != nil && err != io.EOF {
+		return err
+	}
+	err = json.Unmarshal(data[:n], result)
+	return err
 }
 
 func JsonSerialize(a interface{}) string {
