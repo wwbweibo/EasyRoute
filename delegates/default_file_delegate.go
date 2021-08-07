@@ -25,7 +25,7 @@ func GetDefaultDelegate(contentRoot string) RequestDelegate {
 		"/default.html",
 		"/default.htm",
 	}
-	return func(ctx *http3.HttpContext) {
+	return func(ctx *http3.Context) {
 		for _, fileName := range defaultFileList {
 			fileData, err := ioutil.ReadFile(wwwroot + fileName)
 			if err != nil {

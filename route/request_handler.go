@@ -14,7 +14,7 @@ type HttpRequestHandler struct {
 }
 
 func (handler *HttpRequestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	ctx := http3.HttpContext{
+	ctx := http3.Context{
 		Request:  request,
 		Response: writer,
 		Ctx:      cctx.Background(),
@@ -30,7 +30,7 @@ type requestHandler struct {
 
 func newRequestHandler(trie *EndPointTrie) requestHandler {
 	return requestHandler{
-		delegate: func(ctx *http3.HttpContext) {
+		delegate: func(ctx *http3.Context) {
 			request := ctx.Request
 			path := strings.ToLower(request.URL.Path)
 			logger.Info("[RequestHandler] request for path " + path)

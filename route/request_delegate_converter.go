@@ -10,7 +10,7 @@ import (
 )
 
 func convertControllerMethodToRequestDelegate(method reflect.Value, params []ParamMap, httpMethod string) delegates2.RequestDelegate {
-	delegate := func(ctx *http3.HttpContext) {
+	delegate := func(ctx *http3.Context) {
 		request := ctx.Request
 		if strings.ToLower(request.Method) == strings.ToLower(httpMethod) {
 			// if the length of param map greater than 0, the method got params, fill it

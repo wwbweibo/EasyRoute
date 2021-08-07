@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-var NotFoundDelegate = func(ctx *http3.HttpContext) {
+var NotFoundDelegate = func(ctx *http3.Context) {
 	ctx.Response.WriteHeader(http.StatusNotFound)
 	ctx.Response.Write([]byte("404 Not Found"))
 }

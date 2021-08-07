@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-type HttpContext struct {
+type Context struct {
 	Request  *http.Request
 	Response http.ResponseWriter
 	Ctx      context.Context

@@ -35,7 +35,7 @@ func NewEndPointTrie() *EndPointTrie {
 		endPoint: nil,
 		next:     make([]*EndPointTrieNode, 0),
 		section:  "/",
-		DefaultHandler: func(ctx *http3.HttpContext) {
+		DefaultHandler: func(ctx *http3.Context) {
 			ctx.Response.WriteHeader(http2.StatusNotFound)
 			ctx.Response.Write([]byte("404 Not Found"))
 		},
