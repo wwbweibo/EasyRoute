@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func convertControllerMethodToRequestDelegate(method reflect.Value, params []*ParamMap, httpMethod string) delegates2.RequestDelegate {
+func convertControllerMethodToRequestDelegate(method reflect.Value, params []ParamMap, httpMethod string) delegates2.RequestDelegate {
 	delegate := func(ctx *http3.HttpContext) {
 		request := ctx.Request
 		if strings.ToLower(request.Method) == strings.ToLower(httpMethod) {

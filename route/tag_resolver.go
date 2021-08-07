@@ -45,17 +45,17 @@ func ResolveMethod(tag reflect.StructTag) string {
 	if method == "" {
 		method = "GET"
 	}
-	return method
+	return strings.ToUpper(method)
 }
 
 // ResolveParamName get the typeName and method name map
-func ResolveParamName(field reflect.StructField) []*ParamMap {
+func ResolveParamName(field reflect.StructField) []ParamMap {
 	tag := field.Tag
 	paramNameString := tag.Get("param")
 	if paramNameString == "" {
 		return nil
 	}
-	paramList := make([]*ParamMap, 0)
+	paramList := make([]ParamMap, 0)
 	paramNameList := strings.Split(paramNameString, ",")
 	// get method signature
 	methodSignature := field.Type.String()
@@ -64,20 +64,20 @@ func ResolveParamName(field reflect.StructField) []*ParamMap {
 	paramType := strings.Split(methodSignature, ",")
 
 	if len(paramType) != len(paramNameList) {
-		panic("error: the method paramName and paramType not matched")
+		panic("error: the length of method paramName and paramType not matched")
 	}
 
 	for i := 0; i < len(paramNameList); i++ {
 		name := strings.Split(paramNameList[i], ":")
-		m := &ParamMap{
-			paramType: paramType[i],
+		m := ParamMap{
+			paramType: strings.Trim(paramType[i], " "),
 		}
 
 		if len(name) == 2 {
-			m.paramName = name[0]
+			m.paramName = strings.Trim(name[0], " ")
 			m.source = name[1]
 		} else {
-			m.paramName = name[0]
+			m.paramName = strings.Trim(name[0], " ")
 			m.source = "FromQuery"
 		}
 		paramList = append(paramList, m)

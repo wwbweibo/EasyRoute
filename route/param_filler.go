@@ -18,7 +18,7 @@ type ParamMap struct {
 // 参数填充方法
 
 // fill up the param list
-func fillUp(request *http.Request, paramList []*ParamMap) []reflect.Value {
+func fillUp(request *http.Request, paramList []ParamMap) []reflect.Value {
 	paramValueList := make([]reflect.Value, len(paramList))
 	for idx, param := range paramList {
 		if param.source == "FromQuery" {
@@ -33,7 +33,7 @@ func fillUp(request *http.Request, paramList []*ParamMap) []reflect.Value {
 }
 
 // fill up params from query string
-func fillUpFromQueryString(request *http.Request, param *ParamMap) reflect.Value {
+func fillUpFromQueryString(request *http.Request, param ParamMap) reflect.Value {
 	value := request.URL.Query().Get(param.paramName)
 	paramType, err := typeCollectionInstance.TypeOf(param.paramType)
 	if err != nil {
@@ -47,14 +47,14 @@ func fillUpFromQueryString(request *http.Request, param *ParamMap) reflect.Value
 	return reflect.ValueOf(value)
 }
 
-func fillUpFromBodyContent(request *http.Request, param *ParamMap) reflect.Value {
+func fillUpFromBodyContent(request *http.Request, param ParamMap) reflect.Value {
 	bodyContent := request.Body
 	buf := bytes.Buffer{}
 	buf.ReadFrom(bodyContent)
 	return deserializeJsonObject(param.paramType, buf.Bytes())
 }
 
-func fillUpFromForm(request *http.Request, param *ParamMap) reflect.Value {
+func fillUpFromForm(request *http.Request, param ParamMap) reflect.Value {
 	value := request.Form[param.paramName]
 	if len(value) <= 0 {
 		return reflect.ValueOf(nil)
@@ -62,7 +62,7 @@ func fillUpFromForm(request *http.Request, param *ParamMap) reflect.Value {
 	return deserializeJsonObject(param.paramType, []byte(value[0]))
 }
 
-func fillUpFromPath(request http.Request, param *ParamMap) reflect.Value {
+func fillUpFromPath(request http.Request, param ParamMap) reflect.Value {
 	// todo : path 变量的获取方式
 	url := request.URL.String()
 	pathList := strings.Split(url, "/")
