@@ -18,12 +18,12 @@ var internalTypes = []reflect.Type{
 }
 
 type TypeCollect struct {
-	types map[string]*reflect.Type
+	types map[string]reflect.Type
 }
 
 func NewTypeCollect() *TypeCollect {
 	instance := &TypeCollect{
-		types: make(map[string]*reflect.Type),
+		types: make(map[string]reflect.Type),
 	}
 	instance.registerInternalTypes()
 	return instance
@@ -31,30 +31,29 @@ func NewTypeCollect() *TypeCollect {
 
 func (receiver *TypeCollect) registerInternalTypes() {
 	for _, internalType := range internalTypes {
-		receiver.types[internalType.String()] = &internalType
+		receiver.types[internalType.String()] = internalType
 	}
 }
 
 func (receiver *TypeCollect) Register(inst interface{}) {
 	instType := reflect.TypeOf(inst)
-	receiver.RegisterType(&instType)
+	receiver.RegisterType(instType)
 }
 
-func (receiver *TypeCollect) RegisterType(t *reflect.Type) {
-	x := *t
+func (receiver *TypeCollect) RegisterType(t reflect.Type) {
 
-	if x.Kind() == reflect.Ptr {
-		x = x.Elem()
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
 	}
 
-	if _, ok := receiver.types[x.String()]; ok {
+	if _, ok := receiver.types[t.String()]; ok {
 		return
 	} else {
-		receiver.types[x.String()] = &x
+		receiver.types[t.String()] = t
 	}
 }
 
-func (receiver *TypeCollect) TypeOf(name string) (*reflect.Type, error) {
+func (receiver *TypeCollect) TypeOf(name string) (reflect.Type, error) {
 	if t, ok := receiver.types[name]; ok {
 		return t, nil
 	} else {
@@ -62,9 +61,10 @@ func (receiver *TypeCollect) TypeOf(name string) (*reflect.Type, error) {
 	}
 }
 
+// InstanceOf will create an instance of given type, and return it pointer
 func (receiver *TypeCollect) InstanceOf(name string) (reflect.Value, error) {
 	if t, ok := receiver.types[name]; ok {
-		createdInstance := reflect.New(*t)
+		createdInstance := reflect.New(t)
 		return createdInstance, nil
 		// return createdInstance.Elem().Interface(), nil
 	} else {

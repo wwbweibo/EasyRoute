@@ -41,7 +41,7 @@ func fillUpFromQueryString(request *http.Request, param ParamMap) reflect.Value 
 	}
 
 	// if type of struct, need to deserialize
-	if (*paramType).Kind() == reflect.Struct {
+	if (paramType).Kind() == reflect.Struct {
 		return deserializeJsonObject(param.paramType, []byte(value))
 	}
 	return reflect.ValueOf(value)
@@ -55,11 +55,17 @@ func fillUpFromBodyContent(request *http.Request, param ParamMap) reflect.Value 
 }
 
 func fillUpFromForm(request *http.Request, param ParamMap) reflect.Value {
-	value := request.Form[param.paramName]
+	//
+	//err := request.ParseForm()
+	//if err != nil {
+	//	panic("error to parse form " + err.Error())
+	//}
+
+	value := request.PostFormValue(param.paramName) // request.Form[param.paramName]
 	if len(value) <= 0 {
 		return reflect.ValueOf(nil)
 	}
-	return deserializeJsonObject(param.paramType, []byte(value[0]))
+	return deserializeJsonObject(param.paramType, []byte(value))
 }
 
 func fillUpFromPath(request http.Request, param ParamMap) reflect.Value {

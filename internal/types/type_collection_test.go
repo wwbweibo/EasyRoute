@@ -46,10 +46,11 @@ func Test_create_instance(t *testing.T) {
 	inst.Register(testType{})
 
 	c, err := inst.InstanceOf("types.testType")
+	intf := c.Interface()
 	if err != nil {
 		t.Error("try to create instance error", err)
 	}
-	if _, ok := c.Interface().(testType); !ok {
+	if _, ok := intf.(*testType); !ok {
 		t.Error("Error to cast type")
 	}
 }
@@ -60,4 +61,19 @@ func Test_create_instance_type_not_register(t *testing.T) {
 	if err == nil {
 		t.Error("test failed, error should not be empty")
 	}
+}
+
+func TestTypeCollect_InstanceOf(t *testing.T) {
+	inst := NewTypeCollect()
+	inst.Register(testType{})
+	tt, err := inst.TypeOf("types.testType")
+	if err != nil {
+		t.Errorf("test failed, %s", err)
+		t.FailNow()
+	}
+
+	if tt.Name() != "testType" {
+		t.Errorf("type name error, %s", tt.Name())
+	}
+
 }

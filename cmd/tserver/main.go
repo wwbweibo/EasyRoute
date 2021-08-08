@@ -34,6 +34,7 @@ type HomeController struct {
 	IndexA      func(a string) (string, error)      `method:"Get" param:"a"`
 	IndexPerson func(person Person) (Person, error) `method:"get" param:"person"`
 	PostIndex   func() (string, error)              `method:"POST"`
+	PostPerson  func(person Person) (Person, error) `method:"POST" param:"person:FromForm"`
 }
 
 func (self *HomeController) GetControllerType() reflect.Type {
@@ -56,6 +57,9 @@ func NewHomeController() *HomeController {
 		},
 		PostIndex: func() (string, error) {
 			return "success", nil
+		},
+		PostPerson: func(person Person) (Person, error) {
+			return person, nil
 		},
 	}
 	return &instance

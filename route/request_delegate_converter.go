@@ -1,7 +1,6 @@
 package route
 
 import (
-	"encoding/json"
 	delegates2 "github.com/wwbweibo/EasyRoute/delegates"
 	http3 "github.com/wwbweibo/EasyRoute/http"
 	"net/http"
@@ -16,13 +15,12 @@ func convertControllerMethodToRequestDelegate(method reflect.Value, params []Par
 			// if the length of param map greater than 0, the method got params, fill it
 			if params == nil || len(params) <= 0 {
 				result := method.Call(nil)[0]
-				data, _ := json.Marshal(result.Interface())
-				ctx.Response.Write(data)
+				_ = ctx.WriteJson(result.Interface(), http.StatusOK)
 			} else {
 				params := fillUp(request, params)
 				result := method.Call(params)[0]
-				data, _ := json.Marshal(result.Interface())
-				ctx.Response.Write(data)
+				_ = ctx.WriteJson(result.Interface(), http.StatusOK)
+				// ctx.Response.Write(data)
 			}
 		} else {
 			ctx.Response.WriteHeader(http.StatusMethodNotAllowed)

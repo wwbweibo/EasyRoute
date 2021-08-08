@@ -31,14 +31,13 @@ func GetDefaultDelegate(contentRoot string) RequestDelegate {
 			if err != nil {
 				continue
 			}
-
-			ctx.Response.Write(fileData)
-			ctx.Response.WriteHeader(http.StatusOK)
+			contentType := "text/html"
 			if strings.Contains(ctx.Request.URL.Path, ".js") {
-				ctx.Response.Header().Add("Content-Type", "application/x-javascript")
+				contentType = "application/x-javascript"
 			} else if strings.Contains(ctx.Request.URL.Path, ".svg") {
-				ctx.Response.Header().Set("Content-Type", "image/svg+xml")
+				contentType = "image/svg+xml"
 			}
+			_ = ctx.Write(fileData, http.StatusOK, contentType)
 			return
 		}
 		NotFoundDelegate(ctx)
