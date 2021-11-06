@@ -17,7 +17,7 @@ func convertControllerMethodToRequestDelegate(method reflect.Value, params []Par
 				result := method.Call(nil)[0]
 				_ = ctx.WriteJson(result.Interface(), http.StatusOK)
 			} else {
-				params := fillUp(request, params)
+				params := fillUp(ctx, params)
 				result := method.Call(params)[0]
 				_ = ctx.WriteJson(result.Interface(), http.StatusOK)
 				// ctx.Response.Write(data)

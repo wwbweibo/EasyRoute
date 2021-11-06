@@ -3,6 +3,7 @@ package route
 import (
 	"bytes"
 	"encoding/json"
+	http3 "github.com/wwbweibo/EasyRoute/http"
 	"github.com/wwbweibo/EasyRoute/logger"
 	"net/http"
 	"reflect"
@@ -18,8 +19,12 @@ type ParamMap struct {
 // 参数填充方法
 
 // fill up the param list
-func fillUp(request *http.Request, paramList []ParamMap) []reflect.Value {
+func fillUp(ctx *http3.Context, paramList []ParamMap) []reflect.Value {
 	paramValueList := make([]reflect.Value, len(paramList))
+	if paramList[0].paramType == "context.Context" {
+		paramValueList[0] = reflect.ValueOf(ctx.Ctx)
+	}
+	request := ctx.Request
 	for idx, param := range paramList {
 		if param.source == "FromQuery" {
 			paramValueList[idx] = fillUpFromQueryString(request, param)

@@ -59,9 +59,18 @@ func ResolveParamName(field reflect.StructField) []ParamMap {
 	paramNameList := strings.Split(paramNameString, ",")
 	// get method signature
 	methodSignature := field.Type.String()
+	println(methodSignature)
 	methodSignature = strings.Replace(methodSignature, "func(", "", 1)
 	methodSignature = methodSignature[0:strings.Index(methodSignature, ")")]
 	paramType := strings.Split(methodSignature, ",")
+	// check the first param is context
+	if len(paramType) > 0 {
+		println(paramType[0])
+		if paramType[0] == "context.Context" {
+			paramList = append(paramList, ParamMap{paramType: "context.Context", paramName: "ctx"})
+			paramType = paramType[1:]
+		}
+	}
 
 	if len(paramType) != len(paramNameList) {
 		panic("error: the length of method paramName and paramType not matched")

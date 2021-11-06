@@ -14,7 +14,7 @@ func main() {
 		HttpConfig: EasyRoute.HttpConfig{
 			Prefix: "/",
 			Host:   "0.0.0.0",
-			Port:   "8080",
+			Port:   "8081",
 		},
 	}
 	server, _ := EasyRoute.NewServer(ctx, config)
@@ -30,11 +30,12 @@ type Person struct {
 }
 
 type HomeController struct {
-	Index       func() (string, error)              `method:"Get"`
-	IndexA      func(a string) (string, error)      `method:"Get" param:"a"`
-	IndexPerson func(person Person) (Person, error) `method:"get" param:"person"`
-	PostIndex   func() (string, error)              `method:"POST"`
-	PostPerson  func(person Person) (Person, error) `method:"POST" param:"person:FromForm"`
+	Index        func() (string, error)                              `method:"Get"`
+	IndexA       func(a string) (string, error)                      `method:"Get" param:"a"`
+	IndexContext func(ctx context.Context, a string) (string, error) `method:"Get" param:"a"`
+	IndexPerson  func(person Person) (Person, error)                 `method:"get" param:"person"`
+	PostIndex    func() (string, error)                              `method:"POST"`
+	PostPerson   func(person Person) (Person, error)                 `method:"POST" param:"person:FromForm"`
 }
 
 func (self *HomeController) GetControllerType() reflect.Type {
@@ -50,6 +51,9 @@ func NewHomeController() *HomeController {
 		IndexA: func(a string) (string, error) {
 			fmt.Println(a)
 			return a, nil
+		},
+		IndexContext: func(ctx context.Context, a string) (string, error) {
+			return "a", nil
 		},
 		IndexPerson: func(person Person) (Person, error) {
 			fmt.Printf("Name： %s, Age：%f\n", person.Name, person.Age)
