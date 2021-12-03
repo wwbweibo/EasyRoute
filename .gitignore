@@ -1,2 +1,3 @@
 .idea/
 /example/wwwroot/
+/cmd/protoc-gen-easyroute/route/

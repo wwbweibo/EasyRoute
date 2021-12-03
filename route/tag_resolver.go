@@ -65,7 +65,6 @@ func ResolveParamName(field reflect.StructField) []ParamMap {
 	paramType := strings.Split(methodSignature, ",")
 	// check the first param is context
 	if len(paramType) > 0 {
-		println(paramType[0])
 		if paramType[0] == "context.Context" {
 			paramList = append(paramList, ParamMap{paramType: "context.Context", paramName: "ctx"})
 			paramType = paramType[1:]
