@@ -9,9 +9,13 @@ import (
 	"google.golang.org/protobuf/types/pluginpb"
 )
 
+var enableRpc *bool
+
 // main is the entry point for the application.
 func main() {
 	var flags flag.FlagSet
+
+	enableRpc = flags.Bool("rpc", false, "enable RPC generation")
 
 	protogen.Options{
 		ParamFunc: flags.Set,
@@ -21,7 +25,6 @@ func main() {
 			if !f.Generate {
 				continue
 			}
-			// TODO: generating file here
 			generate(gen, f)
 		}
 		return nil
@@ -65,6 +68,9 @@ func generateController(file *protogen.GeneratedFile, service *protogen.Service)
 	generateConstructor(file, service)
 	file.P("\n\n")
 	generateInterfaceImplement(file, service)
+	if *enableRpc {
+		generateRpcClient(file, service)
+	}
 }
 
 // generateMethodTags  will accept the method and generate the tags for the method

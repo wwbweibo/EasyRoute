@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 )
 
 // Configs is the config for rpc module
@@ -60,4 +61,13 @@ func ResponseReader(reader io.Reader, result interface{}) error {
 func JsonSerialize(a interface{}) string {
 	v, _ := json.Marshal(a)
 	return string(v)
+}
+
+func ParseInput(input interface{}) map[string]string {
+	inputType := reflect.TypeOf(input)
+	result := make(map[string]string)
+	for i := 0; i < inputType.NumField(); i++ {
+		result[inputType.Field(i).Name] = JsonSerialize(reflect.ValueOf(input).Field(i))
+	}
+	return result
 }

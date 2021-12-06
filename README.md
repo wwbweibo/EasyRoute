@@ -59,6 +59,12 @@ please note, you must call `server.RegisterType` to register your type used in y
 ## rpc
 
 EasyRoute allow you to use rpc for controller. EasyRoute to code generate to create client rpc code.  
-first, you need add rpcgenerator to you PATH, to do this, clone the repo, cd `cmd/rpcgenerator`, and execute `go install`
-then, add `//go:generate rpcgenerator` comment to controller.
+first, you need add rpcgenerator to you PATH, to do this, clone the repo, cd `cmd/rpcgenerator`, and execute `go install`  
+then, add `//go:generate rpcgenerator` comment to controller.  
 last, execute `go generate` to generate code.
+
+## protobuf
+
+this library is also support protobuf, you can use proto file to define your route.  
+
+about how to use proto file to define your route, please refer to [protoc-gen-easyroute](cmd/protoc-gen-easyroute/readme.md)
