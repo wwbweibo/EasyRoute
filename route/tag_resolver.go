@@ -48,48 +48,49 @@ func ResolveMethod(tag reflect.StructTag) string {
 	return strings.ToUpper(method)
 }
 
-// ResolveParamName get the typeName and method name map
-func ResolveParamName(field reflect.StructField) []ParamMap {
-	tag := field.Tag
-	paramNameString := tag.Get("param")
-	if paramNameString == "" {
-		return nil
-	}
-	paramList := make([]ParamMap, 0)
-	paramNameList := strings.Split(paramNameString, ",")
-	// get method signature
-	methodSignature := field.Type.String()
-	println(methodSignature)
-	methodSignature = strings.Replace(methodSignature, "func(", "", 1)
-	methodSignature = methodSignature[0:strings.Index(methodSignature, ")")]
-	paramType := strings.Split(methodSignature, ",")
-	// check the first param is context
-	if len(paramType) > 0 {
-		if paramType[0] == "context.Context" {
-			paramList = append(paramList, ParamMap{paramType: "context.Context", paramName: "ctx"})
-			paramType = paramType[1:]
-		}
-	}
-
-	if len(paramType) != len(paramNameList) {
-		panic("error: the length of method paramName and paramType not matched")
-	}
-
-	for i := 0; i < len(paramNameList); i++ {
-		name := strings.Split(paramNameList[i], ":")
-		m := ParamMap{
-			paramType: strings.Trim(paramType[i], " "),
-		}
-
-		if len(name) == 2 {
-			m.paramName = strings.Trim(name[0], " ")
-			m.source = name[1]
-		} else {
-			m.paramName = strings.Trim(name[0], " ")
-			m.source = "FromQuery"
-		}
-		paramList = append(paramList, m)
-	}
-
-	return paramList
-}
+//
+//// ResolveParamName get the typeName and method name map
+//func ResolveParamName(field reflect.StructField) []ParamMap {
+//	tag := field.Tag
+//	paramNameString := tag.Get("param")
+//	if paramNameString == "" {
+//		return nil
+//	}
+//	paramList := make([]ParamMap, 0)
+//	paramNameList := strings.Split(paramNameString, ",")
+//	// get method signature
+//	methodSignature := field.Type.String()
+//	println(methodSignature)
+//	methodSignature = strings.Replace(methodSignature, "func(", "", 1)
+//	methodSignature = methodSignature[0:strings.Index(methodSignature, ")")]
+//	paramType := strings.Split(methodSignature, ",")
+//	// check the first param is context
+//	if len(paramType) > 0 {
+//		if paramType[0] == "context.Context" {
+//			paramList = append(paramList, ParamMap{paramType: "context.Context", paramName: "ctx"})
+//			paramType = paramType[1:]
+//		}
+//	}
+//
+//	if len(paramType) != len(paramNameList) {
+//		panic("error: the length of method paramName and paramType not matched")
+//	}
+//
+//	for i := 0; i < len(paramNameList); i++ {
+//		name := strings.Split(paramNameList[i], ":")
+//		m := ParamMap{
+//			paramType: strings.Trim(paramType[i], " "),
+//		}
+//
+//		if len(name) == 2 {
+//			m.paramName = strings.Trim(name[0], " ")
+//			m.source = name[1]
+//		} else {
+//			m.paramName = strings.Trim(name[0], " ")
+//			m.source = "FromQuery"
+//		}
+//		paramList = append(paramList, m)
+//	}
+//
+//	return paramList
+//}

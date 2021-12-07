@@ -5,7 +5,6 @@ import (
 	"errors"
 	controllers2 "github.com/wwbweibo/EasyRoute/controllers"
 	delegates2 "github.com/wwbweibo/EasyRoute/delegates"
-	tm "github.com/wwbweibo/EasyRoute/internal/types"
 	"github.com/wwbweibo/EasyRoute/logger"
 	route2 "github.com/wwbweibo/EasyRoute/route"
 	"golang.org/x/sync/errgroup"
@@ -21,7 +20,6 @@ type Server struct {
 	pipeline     *route2.Pipeline           // pipeline defines the request pipeline for current server
 	app          delegates2.RequestDelegate // app is the entry point for a request
 	endPointTrie *route2.EndPointTrie       // endPointTrie maintain all resolved endpoint
-	ts           *tm.TypeCollect            // tsn maintain all registered type used in controllers
 }
 
 func NewServer(ctx context.Context, config Config) (*Server, error) {
@@ -32,7 +30,6 @@ func NewServer(ctx context.Context, config Config) (*Server, error) {
 		controllers:  []controllers2.Controller{},
 		pipeline:     route2.NewPipeline(),
 		endPointTrie: route2.NewEndPointTrie(),
-		ts:           tm.NewTypeCollect(),
 	}, nil
 }
 
@@ -53,11 +50,6 @@ func (server *Server) AddDefaultHandler(pattern string, delegate delegates2.Requ
 	logger.Info("[server] - [AddDefaultHandler] add default handler to pattern " + pattern)
 	targetNode, _ := server.endPointTrie.GetRoot().Search(strings.Split(pattern, "/")[1:])
 	targetNode.DefaultHandler = delegate
-}
-
-// RegisterType will register given type server type collection
-func (server *Server) RegisterType(t interface{}) {
-	server.ts.Register(t)
 }
 
 // Serve will make server ready for request and listen with given config
@@ -87,7 +79,6 @@ func (server *Server) Serve() error {
 }
 
 func (server *Server) prepare() {
-	route2.InjectTypes(server.ts)
 	route2.ScanEndPoint(server.endPointTrie, server.controllers, server.config.HttpConfig.Prefix)
 	server.buildPipeline()
 }

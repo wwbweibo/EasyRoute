@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/wwbweibo/EasyRoute"
+	"github.com/wwbweibo/EasyRoute/http"
 	"reflect"
 )
 
@@ -18,8 +19,7 @@ func main() {
 		},
 	}
 	server, _ := EasyRoute.NewServer(ctx, config)
-	server.RegisterType(Person{})
-	server.AddController(NewHomeController())
+	server.AddController(NewSampleController())
 	err := server.Serve()
 	fmt.Println(err.Error())
 }
@@ -29,42 +29,21 @@ type Person struct {
 	Age  float64 `json:"Age"`
 }
 
-type HomeController struct {
-	Index        func() (string, error)                              `method:"Get"`
-	IndexA       func(a string) (string, error)                      `method:"Get" param:"a"`
-	IndexContext func(ctx context.Context, a string) (string, error) `method:"Get" param:"a"`
-	IndexPerson  func(person Person) (Person, error)                 `method:"get" param:"person"`
-	PostIndex    func() (string, error)                              `method:"POST"`
-	PostPerson   func(person Person) (Person, error)                 `method:"POST" param:"person:FromForm"`
+type SampleController struct {
+	Index func(ctx *http.Context)
 }
 
-func (self *HomeController) GetControllerType() reflect.Type {
-	return reflect.TypeOf(*self)
+func (c *SampleController) GetControllerType() reflect.Type {
+	return reflect.TypeOf(*c)
 }
 
-func NewHomeController() *HomeController {
-	instance := HomeController{
-		Index: func() (string, error) {
-			fmt.Println("enter index")
-			return "Index", nil
-		},
-		IndexA: func(a string) (string, error) {
-			fmt.Println(a)
-			return a, nil
-		},
-		IndexContext: func(ctx context.Context, a string) (string, error) {
-			return "a", nil
-		},
-		IndexPerson: func(person Person) (Person, error) {
-			fmt.Printf("Name： %s, Age：%f\n", person.Name, person.Age)
-			return person, nil
-		},
-		PostIndex: func() (string, error) {
-			return "success", nil
-		},
-		PostPerson: func(person Person) (Person, error) {
-			return person, nil
+func NewSampleController() *SampleController {
+	return &SampleController{
+		Index: func(ctx *http.Context) {
+			name := ctx.Request.URL.Query()["name"]
+			fmt.Println(name[0])
+			ctx.Response.WriteHeader(200)
+			ctx.Response.Write([]byte(name[0]))
 		},
 	}
-	return &instance
 }

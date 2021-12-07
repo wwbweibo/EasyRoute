@@ -5,14 +5,11 @@ EasyRoute provide an easy way to create http server and expose your end point.
 ## controller
 
 EasyRoute enables you to use controller in golang.  
-To create a controller, just create a struct witch name is end with `Controller`, and then implement `EasyRoute.controllers.Controller` interface.
+To create a controller, just create a struct witch name end with `Controller`, and then implement `EasyRoute.controllers.Controller` interface. 
 
 ```go
 type HomeController struct {
-	Index       func() (string, error)              `method:"Get"`
-	IndexA      func(a string) (string, error)      `method:"Get" param:"a"`
-	IndexPerson func(person Person) (Person, error) `method:"get" param:"person"`
-	PostIndex   func() (string, error)              `method:"POST"`
+    Index       func(ctx *http.Context)             `method:"GET"`
 }
 ```
 In this example, the server will scan this struct, and resolve the controller name as `Home`, if you want to customs controller name just provide a string field named `controllerName`. In this way, you need set the field value in your constructor.  
@@ -20,16 +17,11 @@ In this example, the server will scan this struct, and resolve the controller na
 For the function, you need to provide a list of tag to tell server how to expose it. Current, EasyRoute allows you to use tags as follows:
 
 - method: the http request method for the function, if not provide, `GET` as default.
-- param: request param list, Comma separated string, if the function has parameters, must provide.
-  you can specify the where to get a param, just provide the value after the parameter name, separated by ":", if not provide, default if `FromQuery`, means get it from query string.  
-  for example, the server need to get the parameter from Form, just do like this
-  ```go
-  // server will resolve person from form
-  Index func(person Person) (string, error) `method:"POST" param:"person:FromForm"`
-  ```
 - route: the exposed name for the function, optional, default is function name.
 
 the server will expose the function as `/[ControllerName]/[route]`
+
+please note that the function name must be `func(ctx *http.Context)`
 
 ## initial and start a server
 
