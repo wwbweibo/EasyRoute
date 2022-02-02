@@ -3,9 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"google.golang.org/genproto/googleapis/api/annotations"
 	"google.golang.org/protobuf/compiler/protogen"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/pluginpb"
 )
 
@@ -51,81 +49,6 @@ func generate(plugin *protogen.Plugin, file *protogen.File) *protogen.GeneratedF
 	g.QualifiedGoIdent(protogen.GoIdent{GoImportPath: "context"})
 	g.QualifiedGoIdent(protogen.GoIdent{GoImportPath: "reflect"})
 	g.QualifiedGoIdent(protogen.GoIdent{GoImportPath: "google.golang.org/grpc"})
+	g.QualifiedGoIdent(protogen.GoIdent{GoImportPath: "github.com/lazada/protoc-gen-go-http/codec"})
 	return g
-}
-
-func generateController(file *protogen.GeneratedFile, service *protogen.Service) {
-	file.P(fmt.Sprintf("type %sController struct {", service.GoName))
-	file.P(fmt.Sprintf("\tserver %sServer", service.GoName))
-	// writing GetControllerType function
-	//file.P(fmt.Sprintf("    GetControllerType() reflect.Type"))
-	// walk through all the service method and generate function
-	for _, method := range service.Methods {
-		if method.Desc.IsStreamingServer() || method.Desc.IsStreamingClient() {
-			continue
-		}
-		file.P(fmt.Sprintf("    %s func(ctx *http.Context) `%s`",
-			method.GoName,
-			getMethodTag(method)))
-	}
-	file.P("}\n\n")
-	generateConstructor(file, service)
-	file.P("\n\n")
-	generateInterfaceImplement(file, service)
-	if *enableRpc {
-		generateRpcClient(file, service)
-	}
-}
-
-// generateMethodTags  will accept the method and generate the tags for the method
-func getMethodTag(method *protogen.Method) string {
-	value := proto.GetExtension(method.Desc.Options(), annotations.E_Http)
-	rule := value.(*annotations.HttpRule)
-	if rule != nil {
-		path, method := resolveHttpMethod(rule)
-		// TODO: 解析参数
-		return fmt.Sprintf("method:\"%s\" route:\"%s\" param:\"input\"", method, path)
-	}
-	return fmt.Sprintf("method:\"GET\"")
-}
-
-func resolveHttpMethod(rule *annotations.HttpRule) (string, string) {
-	var path string
-	var method string
-	switch pattern := rule.Pattern.(type) {
-	case *annotations.HttpRule_Get:
-		path = pattern.Get
-		method = "GET"
-	case *annotations.HttpRule_Put:
-		path = pattern.Put
-		method = "PUT"
-	case *annotations.HttpRule_Post:
-		path = pattern.Post
-		method = "POST"
-	case *annotations.HttpRule_Delete:
-		path = pattern.Delete
-		method = "DELETE"
-	case *annotations.HttpRule_Patch:
-		path = pattern.Patch
-		method = "PATCH"
-	case *annotations.HttpRule_Custom:
-		path = pattern.Custom.Path
-		method = pattern.Custom.Kind
-	}
-	return path, method
-}
-
-func generateConstructor(file *protogen.GeneratedFile, service *protogen.Service) {
-	file.P(fmt.Sprintf("func New%sController(server %sServer) *%sController {",
-		service.GoName,
-		service.GoName,
-		service.GoName))
-	file.P(fmt.Sprintf("    return &%sController{server: server}", service.GoName))
-	file.P("}")
-}
-
-func generateInterfaceImplement(file *protogen.GeneratedFile, service *protogen.Service) {
-	file.P(fmt.Sprintf("func (c *%sController) GetControllerType() reflect.Type {", service.GoName))
-	file.P(fmt.Sprintf("    return reflect.TypeOf(*c)"))
-	file.P("}")
 }

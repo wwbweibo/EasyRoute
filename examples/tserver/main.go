@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/wwbweibo/EasyRoute"
-	"github.com/wwbweibo/EasyRoute/http"
-	"reflect"
+	v1 "github.com/wwbweibo/EasyRoute/examples/api/greeting/v1"
 )
 
 func main() {
-	// logger.WithLogger(adapter.LogrusAdapter{})
 	ctx, _ := context.WithCancel(context.Background())
 	config := EasyRoute.Config{
 		HttpConfig: EasyRoute.HttpConfig{
@@ -19,31 +17,17 @@ func main() {
 		},
 	}
 	server, _ := EasyRoute.NewServer(ctx, config)
-	server.AddController(NewSampleController())
+	server.AddController(v1.NewGreetingServiceController(&GreetingService{}))
 	err := server.Serve()
 	fmt.Println(err.Error())
 }
 
-type Person struct {
-	Name string  `json:"Name"`
-	Age  float64 `json:"Age"`
+type GreetingService struct {
+	v1.UnimplementedGreetingServiceServer
 }
 
-type SampleController struct {
-	Index func(ctx *http.Context)
-}
-
-func (c *SampleController) GetControllerType() reflect.Type {
-	return reflect.TypeOf(*c)
-}
-
-func NewSampleController() *SampleController {
-	return &SampleController{
-		Index: func(ctx *http.Context) {
-			name := ctx.Request.URL.Query()["name"]
-			fmt.Println(name[0])
-			ctx.Response.WriteHeader(200)
-			ctx.Response.Write([]byte(name[0]))
-		},
-	}
+func (svc *GreetingService) Greeting(ctx context.Context, req *v1.GreetingRequest) (*v1.GreetingResponse, error) {
+	return &v1.GreetingResponse{
+		Message: "hello " + req.Name,
+	}, nil
 }
