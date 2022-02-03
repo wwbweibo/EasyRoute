@@ -71,26 +71,3 @@ func TestResolveMethod(t *testing.T) {
 		t.Fail()
 	}
 }
-
-func TestResolveParamName(t *testing.T) {
-	controller := TestController{}
-	controllerType := controller.GetControllerType()
-	params := ResolveParamName(controllerType.Field(2))
-	if params[0].paramName != "a" || params[0].paramType != "string" {
-		t.Errorf("param %s and type %s is not matched",
-			params[0].paramName, params[0].paramType)
-		t.Fail()
-	}
-
-	if params[1].paramName != "person" || params[1].paramType != "route.Person" {
-		t.Errorf("param %s and type %s is not matched",
-			params[1].paramName, params[1].paramType)
-		t.Fail()
-	}
-
-	if params[2].paramName != "p" || params[2].paramType != "route.Person" || params[2].source != "FromForm" {
-		t.Errorf("param %s, type %s and source %s is not matched",
-			params[2].paramName, params[2].paramType, params[2].source)
-		t.Fail()
-	}
-}
