@@ -91,7 +91,7 @@ func generateControllerMethodImpl(file *protogen.GeneratedFile, service *protoge
 	file.P("\t\t\t\t ctx.WriteError(err)")
 	file.P("\t\t\t\t return")
 	file.P("\t\t\t}")
-	file.P("\t\t\tcodec.NewJsonRPCCodec().WriteResponse(ctx.Response, result)")
+	file.P("\t\t\tctx.WriteJson(result, 200)")
 	file.P("\t\t},")
 }
 

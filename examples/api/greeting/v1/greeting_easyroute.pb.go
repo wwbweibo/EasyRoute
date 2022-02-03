@@ -29,7 +29,7 @@ func NewGreetingServiceController(server GreetingServiceServer) *GreetingService
 				ctx.WriteError(err)
 				return
 			}
-			codec.NewJsonRPCCodec().WriteResponse(ctx.Response, result)
+			ctx.WriteJson(result, 200)
 		},
 	}
 }
