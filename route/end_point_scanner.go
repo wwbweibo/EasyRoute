@@ -2,7 +2,7 @@ package route
 
 import (
 	controllers2 "github.com/wwbweibo/EasyRoute/controllers"
-	"github.com/wwbweibo/EasyRoute/logger"
+	"github.com/wwbweibo/EasyRoute/log"
 	"reflect"
 	"strings"
 )
@@ -11,7 +11,7 @@ import (
 func ScanEndPoint(endPointTrie *EndPointTrie, controllers []controllers2.Controller, prefix string) {
 	for _, controller := range controllers {
 		controllerType := controller.GetControllerType()
-		logger.Info("[route] - [ScanEndPoint] scan end point on controller %s", controllerType.String())
+		log.Info("[route] - [ScanEndPoint] scan end point on controller %s", controllerType.String())
 		controllerName := ResolveControllerName(controller)
 		for i := 0; i < controllerType.NumField(); i++ {
 			field := controllerType.Field(i)
@@ -25,7 +25,7 @@ func ScanEndPoint(endPointTrie *EndPointTrie, controllers []controllers2.Control
 			if prefix != "" && prefix != "/" {
 				route = prefix + route
 			}
-			logger.Info("[route] - [ScanEndPoint] find route %s", route)
+			log.Info("[route] - [ScanEndPoint] find route %s", route)
 
 			// get the method body and convert it to a request delegate
 			methodValue := reflect.ValueOf(controller).Elem().Field(i)

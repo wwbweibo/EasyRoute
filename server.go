@@ -5,7 +5,7 @@ import (
 	"errors"
 	controllers2 "github.com/wwbweibo/EasyRoute/controllers"
 	delegates2 "github.com/wwbweibo/EasyRoute/delegates"
-	"github.com/wwbweibo/EasyRoute/logger"
+	"github.com/wwbweibo/EasyRoute/log"
 	route2 "github.com/wwbweibo/EasyRoute/route"
 	"golang.org/x/sync/errgroup"
 	"net/http"
@@ -35,19 +35,19 @@ func NewServer(ctx context.Context, config Config) (*Server, error) {
 
 // AddController will register the given handle to server
 func (server *Server) AddController(controller controllers2.Controller) {
-	logger.Info("[server] - [AddController] add controller %s ", controller.GetControllerType().String())
+	log.Info("[server] - [AddController] add controller %s ", controller.GetControllerType().String())
 	server.controllers = append(server.controllers, controller)
 }
 
 // AddMiddleware will add a middle to pipeline
 func (server *Server) AddMiddleware(middleware delegates2.Middleware) {
-	logger.Info("[server] - [AddMiddleware] add middleware " + reflect.TypeOf(middleware).String())
+	log.Info("[server] - [AddMiddleware] add middleware " + reflect.TypeOf(middleware).String())
 	server.pipeline.AddMiddleware(middleware)
 }
 
 // AddDefaultHandler add a default action for given pattern
 func (server *Server) AddDefaultHandler(pattern string, delegate delegates2.RequestDelegate) {
-	logger.Info("[server] - [AddDefaultHandler] add default handler to pattern " + pattern)
+	log.Info("[server] - [AddDefaultHandler] add default handler to pattern " + pattern)
 	targetNode, _ := server.endPointTrie.GetRoot().Search(strings.Split(pattern, "/")[1:])
 	targetNode.DefaultHandler = delegate
 }
@@ -66,9 +66,9 @@ func (server *Server) Serve() error {
 		go func() {
 			<-ctx.Done()
 			_ = httpServer.Shutdown(ctx)
-			logger.Info("[server] - [Serve] server shutdown due to outer context exit")
+			log.Info("[server] - [Serve] server shutdown due to outer context exit")
 		}()
-		logger.Info("[server] - [Serve] listen http on address %s ", httpServer.Addr)
+		log.Info("[server] - [Serve] listen http on address %s ", httpServer.Addr)
 		return httpServer.ListenAndServe()
 	})
 	group.Go(func() error {
